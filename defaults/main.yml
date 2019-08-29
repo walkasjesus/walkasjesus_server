@@ -1,0 +1,68 @@
+---
+####################
+# Project settings #
+####################
+
+# App version (can be manually chosen. If a new one is set, a new directory will be created. Backup can be restored by repoint the symlink)
+app_version: 'version_1.0'
+# When a new version is installed, the database is copied over from the current version. In some circumestances you want to force this.
+force_copy_database: false
+
+# Will install all requirements
+install_requirements: false
+# Will update the current database structure
+update_database: false
+# Will import a statix CSV file. First time use only! 
+fill_database: false
+# Update translation files
+update_translation_files: false
+# Auto translate all files
+auto_translate_files: false
+
+# General settings
+django_config_file: '{{ django_project_path }}/{{ django_project_title }}/settings.py'
+django_project_name: 'jesuscommandments'
+project_config_name: 'jesuscommandments'
+django_project_title: 'volto_website'
+django_projects_directory: '/var/www'
+django_project_path: '{{ django_projects_directory }}/{{ django_project_name }}/current/{{ django_project_title }}'
+python_env: '{{ git_project_path }}/{{ django_project_title }}/venv'
+
+#Settings.py
+settings_debug: False
+
+################
+# Git settings #
+################
+# Will force a git clone, even if there is no up-to-date and clean local repository
+git_force: no
+# Will clone the configured origin repository to the {{ git_project_path }}
+git_clone: yes
+# Will update the current git repository to the {{ git_project_path }}
+git_update: yes
+# Warning! ssh key can be required
+git_repository: 'git@github.com:Ikbengeenrobot/volto.git'
+git_user: jesuscommandments
+git_project_path: '{{ django_projects_directory }}/{{ django_project_name }}/{{ app_version }}/{{ django_project_title }}'
+
+##################
+# Nginx settings #
+##################
+
+nginx_main_template: nginx.conf.j2
+nginx_app_template: app-nginx.conf.j2
+
+app_user: www-data
+app_group: www-data
+
+domain_names: []
+
+# How long nginx should serve static files (By Example '1d' or 'max')
+nginx_cache_static_files: 1d
+django_max_fileupload_size: '40M'
+
+##################
+# uWSGI settings #
+##################
+
+uwsgi_app_template: app-uwsgi.ini.j2

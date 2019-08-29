@@ -1,0 +1,19 @@
+[uwsgi]
+project = {{ django_project_title }}
+base = {{ django_project_path }}
+
+chdir = %(base)/%(project)
+home = %(base)/%(project)/%(project)
+virtualenv = %(base)/%(project)/venv
+module = %(project).wsgi:application
+plugins = python3
+
+master = true
+processes = 5
+
+socket = {{ django_uwsgi_socket }}
+chown-socket = {{ app_user }}:{{ app_group }}
+chmod-socket = 660
+vacuum = true
+
+enable-threads = true

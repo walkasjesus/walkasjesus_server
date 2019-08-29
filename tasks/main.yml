@@ -1,0 +1,16 @@
+---
+- name: Configure facts
+  set_fact:
+    dir_django_uwsgi_socket: '/run/uwsgi/app/{{ django_project_name }}'
+
+- name: More facts
+  set_fact:
+    django_uwsgi_socket: '{{ dir_django_uwsgi_socket }}/socket'
+  changed_when: False
+  notify:
+    - start nginx
+    - start uwsgi
+
+- include_tasks: deps.yml
+- include_tasks: deploy.yml
+- include_tasks: config.yml
