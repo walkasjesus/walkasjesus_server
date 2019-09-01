@@ -1,6 +1,6 @@
 # server_configuration
 
-This project will install &amp; configure all the server components which are required to serve the [Jesus Commandments App](https://github.com/Ikbengeenrobot/volto)
+This project will install &amp; configure all the server components which are required to serve the [Jesus Commandments App](https://github.com/jesuscommandments/jesus_commandments_app)
 
 ## Requirements
 
@@ -25,13 +25,13 @@ We will Install & Configure:
 
 ## Mandatory Variables
 
-1. Please provide a `secretkey` variable for your django project. We suggest to set this variable in a vault.
-`secretkey: <secretkey of the project>`
+1. Please provide a `jc_secretkey` variable for your django project. We suggest to set this variable in a vault.
+`jc_secretkey: <secretkey of the project>`
 
-2. Configure the domain names in a list in the variable `domain_names`:
+2. Configure the domain names in a list in the variable `jc_domain_names`:
 
 ```yaml
-domain_names:
+jc_domain_names:
   - example.com
   - www.example.com
 ```
@@ -40,28 +40,38 @@ domain_names:
 
 To Update and install the Jesus Commandment Application itself, use the following variables:  
 
-Will install all requirements
-`install_requirements: false`
+Will install all requirements  
+`jc_install_requirements: false`
 Will update the current database structure
-`update_database: false`
+`jc_update_database: false`
 Will import a statix CSV file. First time use only!
-`fill_database: false`
+`jc_fill_database: false`
 Update translation files
-`update_translation_files: false`
+`jc_update_translation_files: false`
 Auto translate all files
-`auto_translate_files: false`
+`jc_auto_translate_files: false`
 
-Will clone the configured origin repository to the {{ git_project_path }}
-`git_clone: yes`
-Will update the current git repository to the {{ git_project_path }}
-`git_update: yes`
+If you running a non-production environment, you can set the following variable to false
+`jc_production: false`
+
+Add your own WAN ip addresses to allow the developer toolbar on your machine for performance and debug statistics 
+```yaml
+jc_developer_ips:
+  - 1.1.1.1
+  - 2.2.2.2
+```
+
+Will clone the configured origin repository to the {{ jc_git_project_path }}
+`jc_git_clone: yes`
+Will update the current git repository to the {{ jc_git_project_path }}
+`jc_git_update: yes`
 Will force a git clone, even if there is no up-to-date and clean local repository
-`git_force: yes`
+`jc_git_force: yes`
 
-Configure the app_version you would like to give this.
-`app_version: 'version_1.0'`
+Configure the jc_app_version you would like to give this.
+`jc_app_version: 'version_1.0'`
 In some situations you would like to force a copy of the previous database to the current one.
-`force_copy_database: false`
+`jc_force_copy_database: false`
 
 ### Rollback
 
@@ -69,14 +79,41 @@ If you want to rollback to the previous version, take the following steps:
 
 1. Point the symlink to the previous version
 
-ln -sf {{ django_projects_directory }}/{{ django_project_name }}/<app_version_to_restore> {{ django_projects_directory }}/{{ django_project_name }}/current
+ln -sf {{ jc_projects_directory }}/{{ jc_project_name }}/<jc_app_version_to_restore> {{ jc_projects_directory }}/{{ jc_project_name }}/current
 So this will look by example:
 `ln -sf /var/www/jesuscommandments/version_1.0 /var/www/jesuscommandments/current`
 
 2. Determine if there are any changes made to the database and media files in the time between the previous version and the current version.
 
 If there are any changes, copy the last active database to the current path, by example:  
-`cp /var/www/jesuscommandments/version_1.0/volto_website/volto_website/db.sqlite3 /var/www/jesuscommandments/current/volto_website/volto_website/db.sqlite3`
+`cp /var/www/jesuscommandments/version_1.0/jesus_commandments_website/jesus_commandments_website/db.sqlite3 /var/www/jesuscommandments/current/jesus_commandments_website/jesus_commandments_website/db.sqlite3`
 
 And rsync the latest media files to the current path, by example:  
-`rsync -av /var/www/jesuscommandments/version_1.0/volto_website/volto_website/media/ /var/www/jesuscommandments/current/volto_website/volto_website/media/`
+`rsync -av /var/www/jesuscommandments/version_1.0/jesus_commandments_website/jesus_commandments_website/media/ /var/www/jesuscommandments/current/jesus_commandments_website/jesus_commandments_website/media/`
+
+### Playbook Example
+
+```yaml
+---
+
+- hosts: 
+  - jesuscommandments
+  become: true
+  gather_facts: true
+
+  vars:
+    jc_install_requirements: true
+    jc_update_database: true
+    jc_fill_database: true
+    jc_update_translation_files: true
+    jc_auto_translate_files: false
+    jc_app_version: 'version_1.0'
+    jc_force_copy_database: false
+    jc_git_force: yes
+    jc_git_clone: yes
+    jc_git_update: yes
+
+
+  roles:
+    - role: jesuscommandments.django
+```

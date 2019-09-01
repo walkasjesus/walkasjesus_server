@@ -1,11 +1,11 @@
 ---
 - name: Configure facts
   set_fact:
-    dir_django_uwsgi_socket: '/run/uwsgi/app/{{ django_project_name }}'
+    jc_dir_uwsgi_socket: '/run/uwsgi/app/{{ jc_project_name }}'
 
 - name: More facts
   set_fact:
-    django_uwsgi_socket: '{{ dir_django_uwsgi_socket }}/socket'
+    jc_uwsgi_socket: '{{ jc_dir_uwsgi_socket }}/socket'
   changed_when: False
   notify:
     - start nginx

@@ -3,7 +3,7 @@ galaxy_info:
   author: Merijn 
   description: Deploy Jesus Commandments App (Django project) with Nginx and uWSGI
   license: "GNU GPLv3"
-  min_ansible_version: 2.7
+  min_ansible_version: 2.4
   platforms:
    - name: Debian
      versions:

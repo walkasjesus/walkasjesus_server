@@ -18,6 +18,6 @@
 
 - name: Add the git user with a bash shell
   user:
-    name: '{{ git_user }}'
+    name: '{{ jc_git_user }}'
     shell: /bin/bash
-    group: www-data
+    group: '{{ jc_app_group }}'

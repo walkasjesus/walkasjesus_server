@@ -3,135 +3,135 @@
   file:
     path: '{{ item }}'
     state: directory
-    owner: '{{ app_user }}'
+    owner: '{{ jc_app_user }}'
   with_items:
-    - '{{ django_projects_directory }}'
-    - '{{ django_projects_directory }}/{{ django_project_name }}'
+    - '{{ jc_projects_directory }}'
+    - '{{ jc_projects_directory }}/{{ jc_project_name }}'
 
 - name: Create version directory
   file:
-    path: '{{ django_projects_directory }}/{{ django_project_name }}/{{ app_version }}'
+    path: '{{ jc_projects_directory }}/{{ jc_project_name }}/{{ jc_app_version }}'
     state: directory
-    owner: '{{ app_user }}'
+    owner: '{{ jc_app_user }}'
   register: newversion
 
 - name: Change recursively all permissions 
   file:
-    dest: '{{ django_projects_directory }}/{{ django_project_name }}/{{ app_version }}'
-    owner: '{{ app_user }}'
-    group: '{{ app_group }}'
+    dest: '{{ jc_projects_directory }}/{{ jc_project_name }}/{{ jc_app_version }}'
+    owner: '{{ jc_app_user }}'
+    group: '{{ jc_app_group }}'
     mode: u=rwX,g=rwX,o=rX
     recurse: yes
 
 - name: Clone git repository    
   become: true
-  become_user: '{{ git_user }}'
+  become_user: '{{ jc_git_user }}'
   git:
-    repo: '{{ git_repository }}'
-    dest: '{{ git_project_path }}'
-    clone: '{{ git_clone }}'
-    update: '{{ git_update }}'
-    force: '{{ git_force }}'
+    repo: '{{ jc_git_repository }}'
+    dest: '{{ jc_git_project_path }}'
+    clone: '{{ jc_git_clone }}'
+    update: '{{ jc_git_update }}'
+    force: '{{ jc_git_force }}'
   notify:
     - reload uwsgi
 
 - name: Deploy config
   template:
     src: 'settings.py.j2'
-    dest: '{{ git_project_path }}/{{ django_project_title }}/{{ django_project_title }}/settings.py'
-    owner: '{{ app_user }}'
-    group: '{{ app_group }}'
+    dest: '{{ jc_git_project_path }}/{{ jc_project_title }}/{{ jc_project_title }}/settings.py'
+    owner: '{{ jc_app_user }}'
+    group: '{{ jc_app_group }}'
   notify:
     - reload uwsgi
 
 - name: Copy media files 
   copy:
     src: '{{ playbook_dir }}/group_vars/jesuscommandments/media'
-    dest: '{{ git_project_path }}/{{ django_project_title }}'
-    owner: '{{ app_user }}'
-    group: '{{ app_group }}'
+    dest: '{{ jc_git_project_path }}/{{ jc_project_title }}'
+    owner: '{{ jc_app_user }}'
+    group: '{{ jc_app_group }}'
     mode: u=rw,g=rw,o=r
     directory_mode: yes
 
 - name: Copy database from current version to new version
   copy:
-    src: '{{ django_project_path }}/{{ django_project_title }}/db.sqlite3'
-    dest: '{{ git_project_path }}/{{ django_project_title }}/db.sqlite3'
+    src: '{{ jc_project_path }}/{{ jc_project_title }}/db.sqlite3'
+    dest: '{{ jc_git_project_path }}/{{ jc_project_title }}/db.sqlite3'
     remote_src: yes
-    owner: '{{ app_user }}'
-    group: '{{ app_group }}'
+    owner: '{{ jc_app_user }}'
+    group: '{{ jc_app_group }}'
     mode: u=rw,g=rw,o=r
   when:
-    - (newversion.changed) or (force_copy_database)
-    - fill_database == false
+    - (newversion.changed) or (jc_force_copy_database)
+    - not jc_fill_database
 
 - name: Install pip dependencies
   pip:
     name: uWSGI
-    virtualenv: '{{ python_env }}'
+    virtualenv: '{{ jc_python_env }}'
     virtualenv_python: python3
 
 - name: Change recursively all permissions 
   file:
-    dest: '{{ django_projects_directory }}/{{ django_project_name }}/{{ app_version }}'
-    owner: '{{ app_user }}'
-    group: '{{ app_group }}'
+    dest: '{{ jc_projects_directory }}/{{ jc_project_name }}/{{ jc_app_version }}'
+    owner: '{{ jc_app_user }}'
+    group: '{{ jc_app_group }}'
     mode: u=rwX,g=rwX,o=rX
     recurse: yes
 
 - name: Install requirements
   become: true
-  become_user: '{{ app_user }}'
+  become_user: '{{ jc_app_user }}'
   shell: "bash install.sh"
   args:
-    chdir: "{{ git_project_path }}/{{ django_project_title }}"
+    chdir: "{{ jc_git_project_path }}/{{ jc_project_title }}"
     executable: /bin/bash
   when:
-    - install_requirements
+    - jc_install_requirements
 
 - name: Update database
   become: true
-  become_user: '{{ app_user }}'
+  become_user: '{{ jc_app_user }}'
   shell: "bash update_database.sh"
   args:
-    chdir: "{{ git_project_path }}/{{ django_project_title }}"
+    chdir: "{{ jc_git_project_path }}/{{ jc_project_title }}"
     executable: /bin/bash
   when:
-    - update_database
+    - jc_update_database
 
 - name: Fill database
   become: true
-  become_user: '{{ app_user }}'
+  become_user: '{{ jc_app_user }}'
   shell: "bash fill_database.sh"
   args:
-    chdir: "{{ git_project_path }}/{{ django_project_title }}"
+    chdir: "{{ jc_git_project_path }}/{{ jc_project_title }}"
     executable: /bin/bash
   when:
-    - fill_database
+    - jc_fill_database
 
 - name: Update translation files
   become: true
-  become_user: '{{ app_user }}'
+  become_user: '{{ jc_app_user }}'
   shell: "bash update_translation_files.sh"
   args:
-    chdir: "{{ git_project_path }}/{{ django_project_title }}"
+    chdir: "{{ jc_git_project_path }}/{{ jc_project_title }}"
     executable: /bin/bash
   when:
-    - update_translation_files
+    - jc_update_translation_files
 
 - name: Auto translate files
   become: true
-  become_user: '{{ app_user }}'
+  become_user: '{{ jc_app_user }}'
   shell: "bash auto_translate_files.sh"
   args:
-    chdir: "{{ git_project_path }}/{{ django_project_title }}"
+    chdir: "{{ jc_git_project_path }}/{{ jc_project_title }}"
     executable: /bin/bash
   when:
-    - auto_translate_files
+    - jc_auto_translate_files
 
 - name: Point symlink to new version
   file:
-    src: '{{ django_projects_directory }}/{{ django_project_name }}/{{ app_version }}'
-    dest: '{{ django_projects_directory }}/{{ django_project_name }}/current'
+    src: '{{ jc_projects_directory }}/{{ jc_project_name }}/{{ jc_app_version }}'
+    dest: '{{ jc_projects_directory }}/{{ jc_project_name }}/current'
     state: link
   notify: restart uwsgi
