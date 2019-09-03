@@ -2,19 +2,8 @@
 - name: Install system dependencies
   become: true
   apt:
-    name: "{{ packages }}"
+    name: "{{ jc_packages }}"
     state: present
-  vars:
-    packages:
-      - nginx
-      - uwsgi
-      - uwsgi-plugin-python3
-      - python3-pip
-      - python3-virtualenv
-      - python-certbot-nginx
-      - virtualenvwrapper
-      - git
-      - gettext
 
 - name: Add the git user with a bash shell
   user:
