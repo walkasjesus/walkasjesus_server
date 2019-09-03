@@ -44,6 +44,15 @@
   notify:
     - reload uwsgi
 
+- name: Deploy superuser config
+  template:
+    src: 'import_users.py.j2'
+    dest: '{{ jc_git_project_path }}/{{ jc_project_title }}/account_app/management/commands/import_users.py'
+    owner: '{{ jc_app_user }}'
+    group: '{{ jc_app_group }}'
+  notify:
+    - reload uwsgi
+
 - name: Copy media files 
   copy:
     src: '{{ playbook_dir }}/group_vars/jesuscommandments/media'
