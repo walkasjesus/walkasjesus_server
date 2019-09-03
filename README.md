@@ -36,6 +36,15 @@ jc_domain_names:
   - www.example.com
 ```
 
+3. Create a superuser by settings the following variables
+```yaml
+jc_superuser_username: <username>
+jc_superuser_email: <email>
+```
+#  we suggest to set the password variable in a vault
+`jc_superuser_password: <password>`
+
+
 ## Usage
 
 To Update and install the Jesus Commandment Application itself, use the following variables:  
