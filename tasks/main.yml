@@ -1,4 +1,14 @@
 ---
+# Database installation & configuration.
+- include_tasks: mariadb-variables.yml
+  when: jc_db_type == "mariadb"
+- include_tasks: mariadb-setup.yml
+  when: jc_db_type == "mariadb"
+- include_tasks: mariadb-secure-installation.yml
+  when: jc_db_type == "mariadb"
+- include_tasks: mariadb-configure.yml
+  when: jc_db_type == "mariadb"
+
 - name: Configure facts
   set_fact:
     jc_dir_uwsgi_socket: '/run/uwsgi/app/{{ jc_project_name }}'

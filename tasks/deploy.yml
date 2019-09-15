@@ -73,6 +73,7 @@
   when:
     - (newversion.changed) or (jc_force_copy_database)
     - not jc_fill_database
+    - jc_db_type != "mariadb"
 
 - name: Install pip dependencies
   pip:
