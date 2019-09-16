@@ -139,6 +139,16 @@
   when:
     - jc_auto_translate_files
 
+- name: Clean Thumbnail Cache
+  become: true
+  become_user: '{{ jc_app_user }}'
+  shell: "bash clean_thumbnail_cache.sh"
+  args:
+    chdir: "{{ jc_git_project_path }}/{{ jc_project_title }}"
+    executable: /bin/bash
+  when:
+    - jc_clean_thumbnail_cache
+
 - name: Point symlink to new version
   file:
     src: '{{ jc_projects_directory }}/{{ jc_project_name }}/{{ jc_app_version }}'

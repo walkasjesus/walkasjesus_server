@@ -59,6 +59,8 @@ Update translation files
 `jc_update_translation_files: false`
 Auto translate all files
 `jc_auto_translate_files: false`
+Clean Thumbnail Cache
+`jc_clean_thumbnail_cache: false`
 
 If you running a non-production environment, you can set the following variable to false
 `jc_production: false`
@@ -118,11 +120,30 @@ And rsync the latest media files to the current path, by example:
     jc_auto_translate_files: false
     jc_app_version: 'version_1.0'
     jc_force_copy_database: false
+    jc_clean_thumbnail_cache: false
     jc_git_force: yes
     jc_git_clone: yes
     jc_git_update: yes
+    jc_domain_names:
+      - acc.jesuscommandments.org
+    jc_production: False
+    jc_settings_debug: True
+    jc_developer_ips:
+      # Developer1
+      - 1.2.3.4
+      # Developer2
+      - 2.3.4.5
+    jc_superuser_username: myadmin
+    jc_superuser_email: info@jesuscommandments.org
+
+    # These settings should be stored in a vault
+    jc_secretkey: <random secret key for django>
+    jc_superuser_password: somepassword1
+    mysql_user_password: somepassword2
+    mysql_root_password: somepassword3
+    mysql_user_jc_password: somepassword4
 
 
   roles:
-    - role: jesuscommandments.django
+    - role: jesus_commandments_server
 ```
