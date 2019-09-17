@@ -195,15 +195,15 @@ mysql_config_include_files: []
 # Jesus Commandments Database Settings #
 ########################################
 
-mysql_db_name: jcdatabase
-mysql_db_collation: utf8_general_ci
-mysql_db_encoding: utf8
-mysql_db_state: present
+mysql_db_jc_name: jcdatabase
+mysql_db_jc_collation: utf8_general_ci
+mysql_db_jc_encoding: utf8
+mysql_db_jc_state: present
 
 mysql_user_jc_name: jcsystem
 #mysql_user_jc_password: password
-mysql_user_host: 127.0.0.1
-mysql_user_priv: "jcdatabase.*:ALL"
-mysql_user_state: present
-#mysql_user_append_privs:
-#mysql_user_encrypted:
+mysql_user_jc_host: 127.0.0.1
+mysql_user_jc_priv: "jcdatabase.*:ALL"
+mysql_user_jc_state: present
+#mysql_user_jc_append_privs:
+#mysql_user_jc_encrypted:

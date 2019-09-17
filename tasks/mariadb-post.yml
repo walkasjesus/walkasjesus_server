@@ -1,0 +1,21 @@
+---
+
+- name: Ensure MySQL database is present.
+  mysql_db:
+    name: "{{ mysql_db_jc_name }}"
+    collation: "{{ mysql_db_jc_collation | default('utf8_general_ci') }}"
+    encoding: "{{ mysql_db_jc_encoding | default('utf8') }}"
+    # login_unix_socket: "{{ mysql_socket }}"
+    state: "{{ mysql_db_jc_state | default('present') }}"
+
+- name: Ensure MySQL user is present.
+  mysql_user:
+    name: "{{ mysql_user_jc_name }}"
+    host: "{{ mysql_user_jc_host | default('localhost') }}"
+    password: "{{ mysql_user_jc_password }}"
+    priv: "{{ mysql_user_jc_priv | default('*.*:USAGE') }}"
+    state: "{{ mysql_user_jc_state | default('present') }}"
+    # login_unix_socket: "{{ mysql_socket }}"
+    append_privs: "{{ mysql_user_jc_append_privs | default('no') }}"
+    encrypted: "{{ mysql_user_jc_encrypted | default('no') }}"
+  no_log: true

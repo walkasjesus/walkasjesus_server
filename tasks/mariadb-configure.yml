@@ -79,23 +79,3 @@
 - name: Ensure MySQL is started and enabled on boot.
   service: "name={{ mysql_daemon }} state=started enabled={{ mysql_enabled_on_startup }}"
   register: mysql_service_configuration
-
-- name: Ensure MySQL database is present.
-  mysql_db:
-    name: "{{ mysql_db_name }}"
-    collation: "{{ mysql_db_collation | default('utf8_general_ci') }}"
-    encoding: "{{ mysql_db_encoding | default('utf8') }}"
-    login_unix_socket: "{{ mysql_socket }}"
-    state: "{{ mysql_db_state | default('present') }}"
-
-- name: Ensure MySQL user is present.
-  mysql_user:
-    name: "{{ mysql_user_name }}"
-    host: "{{ mysql_user_host | default('localhost') }}"
-    password: "{{ mysql_user_password }}"
-    priv: "{{ mysql_user_priv | default('*.*:USAGE') }}"
-    state: "{{ mysql_user_state | default('present') }}"
-    login_unix_socket: "{{ mysql_socket }}"
-    append_privs: "{{ mysql_user_append_privs | default('no') }}"
-    encrypted: "{{ mysql_user_encrypted | default('no') }}"
-  no_log: true

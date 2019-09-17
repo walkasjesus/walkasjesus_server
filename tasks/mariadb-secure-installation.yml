@@ -1,10 +1,4 @@
 ---
-- name: Get MySQL version.
-  command: 'mysql --version'
-  register: mysql_cli_version
-  changed_when: false
-  check_mode: false
-
 - name: Ensure default user is present.
   mysql_user:
     name: "{{ mysql_user_name }}"
@@ -92,4 +86,4 @@
   mysql_db:
     name: test
     state: absent
-    login_unix_socket: "{{ mysql_socket }}"
+    # login_unix_socket: "{{ mysql_socket }}"

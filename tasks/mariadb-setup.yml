@@ -34,3 +34,9 @@
     - ib_logfile0
     - ib_logfile1
   when: not mysql_installed.stat.exists
+
+- name: Get MySQL version.
+  command: 'mysql --version'
+  register: mysql_cli_version
+  changed_when: false
+  check_mode: false

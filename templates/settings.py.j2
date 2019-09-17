@@ -102,10 +102,10 @@ DATABASES = {
 {% if jc_db_type == "mariadb" %}
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': '{{ mysql_db_name }}',
+        'NAME': '{{ mysql_db_jc_name }}',
         'USER': '{{ mysql_user_jc_name }}',
         'PASSWORD': '{{ mysql_user_jc_password }}',
-        'HOST': '{{ mysql_user_host }}',
+        'HOST': '{{ mysql_user_jc_host }}',
         'PORT': '',
     }
 {% else %}
@@ -171,7 +171,7 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 LOGIN_URL = '/account/login/'
-LOGIN_REDIRECT_URL = '/admin/'
+LOGIN_REDIRECT_URL = '/admin_portal/'
 LOGOUT_REDIRECT_URL = '/'
 
 # Map django message level to Bootstrap alert, using the tag attribute

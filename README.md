@@ -19,6 +19,7 @@ We will Install & Configure:
 - Basic OS Hardening
 - Nginx
 - uWSGI
+- Mariadb
 - Jesus Commandment App
   - Initial installation
   - Update to newer versions
