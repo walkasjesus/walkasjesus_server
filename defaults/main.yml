@@ -15,7 +15,9 @@ jc_production: true
 jc_install_requirements: false
 # Will update the current database structure
 jc_update_database: false
-# Will import a statix CSV file. First time use only! 
+# Will create the admin user for the django application
+jc_create_admin_user: false
+# Will import a statix CSV file.
 jc_fill_database: false
 # Update translation files
 jc_update_translation_files: false
@@ -32,6 +34,10 @@ jc_project_title: 'jesus_commandments_website'
 jc_projects_directory: '/var/www'
 jc_project_path: '{{ jc_projects_directory }}/{{ jc_project_name }}/current/{{ jc_project_title }}'
 jc_python_env: '{{ jc_git_project_path }}/{{ jc_project_title }}/venv'
+# The path to the HSV bible texts on the server
+jc_hsv_bible_path: "{{ jc_projects_directory }}/{{ jc_project_name }}/current/hsv_bible.zip"
+# The path to the HSV bible texts on the ansible server
+jc_hsv_bible_path_temp: "{{ playbook_dir }}/group_vars/files/hsv_bible.zip"
 
 #Settings.py
 jc_settings_debug: False

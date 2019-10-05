@@ -45,6 +45,16 @@ jc_superuser_email: <email>
 #  we suggest to set the password variable in a vault
 `jc_superuser_password: <password>`
 
+4. Set the path to the HSV bible texts on the ansible server
+`jc_hsv_bible_path_temp: "{{ playbook_dir }}/group_vars/files/hsv_bible.zip"`
+
+5. Set the API key variable for the scripture.api.bible. You need to get your license @api.bible.
+# The API key to scripture.api.bible
+`jc_bible_api_key: xxxxxxx`
+
+6. Set the key for the HSV bible:
+# The key for the HSV bible
+`jc_hsv_bible_key: xxxxxxx`
 
 ## Usage
 
@@ -54,7 +64,9 @@ Will install all requirements
 `jc_install_requirements: false`
 Will update the current database structure
 `jc_update_database: false`
-Will import a statix CSV file. First time use only!
+Will create the admin user for the django application
+`jc_create_admin_user: false`
+Will import a static CSV file.
 `jc_fill_database: false`
 Update translation files
 `jc_update_translation_files: false`

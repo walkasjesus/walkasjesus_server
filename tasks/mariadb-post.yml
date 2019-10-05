@@ -19,3 +19,9 @@
     append_privs: "{{ mysql_user_jc_append_privs | default('no') }}"
     encrypted: "{{ mysql_user_jc_encrypted | default('no') }}"
   no_log: true
+
+- name: Configure automysqlbackup
+  replace:
+    path: "/etc/default/automysqlbackup"
+    regexp: "/etc/mysql/debian.cnf"
+    replace: "{{ mysql_root_home }}/.my.cnf"
