@@ -55,17 +55,31 @@
 
 - name: Copy media files 
   copy:
-    src: '{{ playbook_dir }}/group_vars/jesuscommandments/media'
+    src: '{{ jc_media_files }}'
     dest: '{{ jc_git_project_path }}/{{ jc_project_title }}'
     owner: '{{ jc_app_user }}'
     group: '{{ jc_app_group }}'
     mode: u=rw,g=rw,o=r
     directory_mode: yes
+  when:
+    - not newversion.changed
+
+- name: Copy previous media files 
+  copy:
+    src: '{{ jc_project_path }}/{{ jc_project_title }}/media'
+    dest: '{{ jc_git_project_path }}/{{ jc_project_title }}/media'
+    remote_src: yes
+    owner: '{{ jc_app_user }}'
+    group: '{{ jc_app_group }}'
+    mode: u=rw,g=rw,o=r
+    directory_mode: yes
+  when:
+    - newversion.changed
 
 - name: Copy HSV Bible
   copy:
     src: '{{ jc_hsv_bible_path_temp }}'
-    dest: '{{ jc_hsv_bible_path }}'
+    dest: '{{ jc_projects_directory }}/{{ jc_project_name }}/{{ jc_app_version }}'
     owner: '{{ jc_app_user }}'
     group: '{{ jc_app_group }}'
     mode: u=rw,g=rw,o=r

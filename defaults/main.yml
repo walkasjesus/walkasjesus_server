@@ -37,7 +37,8 @@ jc_python_env: '{{ jc_git_project_path }}/{{ jc_project_title }}/venv'
 # The path to the HSV bible texts on the server
 jc_hsv_bible_path: "{{ jc_projects_directory }}/{{ jc_project_name }}/current/hsv_bible.zip"
 # The path to the HSV bible texts on the ansible server
-jc_hsv_bible_path_temp: "{{ playbook_dir }}/group_vars/files/hsv_bible.zip"
+jc_hsv_bible_path_temp: "{{ playbook_dir }}/group_vars/jesuscommandments/files/hsv_bible.zip"
+jc_media_files: "{{ playbook_dir }}/group_vars/jesuscommandments/media"
 
 #Settings.py
 jc_settings_debug: False
