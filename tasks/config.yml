@@ -1,4 +1,46 @@
 ---
+- name: set fact for list
+  set_fact: 
+    list: "{{ item.username }}"
+  with_items:
+    - "{{ jc_developer_users }}"
+  register: list_result
+
+- name: make a userlist var
+  set_fact: 
+    userlist: "{{ list_result.results | map(attribute='ansible_facts.list') | list }}"
+
+- name: Configure awstats
+  lineinfile:
+    dest: /etc/awstats/awstats.conf
+    regexp: "^{{ item.property | regex_escape() }}="
+    line: "{{ item.property }}={{ item.value }}"
+  with_items:
+    - { property: 'LogFile', value: "\"/var/log/nginx/access.log\"" }
+    - { property: 'SiteDomain', value: "\"{{ jc_domain_names | first }}\"" }
+    - { property: 'HostAliases', value: "\"localhost 127.0.0.1 {{ jc_domain_names | join (' ') }}\"" }
+    - { property: 'AllowAccessFromWebToAuthenticatedUsersOnly', value: "\"{{ jc_awstats_auth_users_only }}\"" }
+    - { property: 'AllowAccessFromWebToFollowingAuthenticatedUsers', value: "\"{{ userlist | join (' ') }}\"" }
+    - { property: 'AllowAccessFromWebToFollowingIPAddresses', value: "\"{{ jc_developer_ips | join (' ') }}\"" }
+
+- htpasswd:
+    path: /etc/awstats/htpasswd.awstats
+    name: "{{ item.username }}"
+    password: "{{ item.password }}"
+    owner: root
+    group: www-data
+    mode: 0640
+  with_items:
+    - "{{ jc_developer_users }}"
+
+- name: Add cron job for awstats
+  cron:
+    name: Awstats user statistics
+    job: "/usr/lib/cgi-bin/awstats.pl -config=/etc/awstats/awstats.conf -update -output > {{ jc_awstats_dir }}/index.html"
+    minute: "0"
+    hour: "*"
+    user: "root"
+
 - name: Configure main nginx config file
   become: true
   template:
@@ -46,3 +88,4 @@
       state: link
   notify:
     - restart uwsgi
+

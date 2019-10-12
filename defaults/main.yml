@@ -10,6 +10,11 @@ jc_force_copy_database: false
 
 # Puth this value to true if the site is running production on this group of hosts
 jc_production: true
+# When `jc_production` is set to false, the following list needs to be filled to whitelist the developer ip's.
+# When `jc_awstats_auth_users_only` is set to 1, the following list needs to be filled to whitelist the developer ip's
+jc_developer_ips: []
+  # - 1.1.1.1
+  # - 2.2.2.2
 
 # Will install all requirements
 jc_install_requirements: false
@@ -39,6 +44,8 @@ jc_hsv_bible_path: "{{ jc_projects_directory }}/{{ jc_project_name }}/current/hs
 # The path to the HSV bible texts on the ansible server
 jc_hsv_bible_path_temp: "{{ playbook_dir }}/group_vars/jesuscommandments/files/hsv_bible.zip"
 jc_media_files: "{{ playbook_dir }}/group_vars/jesuscommandments/media"
+# Awstats directory
+jc_awstats_dir: "{{ jc_projects_directory }}/{{ jc_project_name }}/awstats"
 
 #Settings.py
 jc_settings_debug: False
@@ -75,6 +82,19 @@ jc_nginx_cache_static_files: 1d
 jc_nginx_max_fileupload_size: '40M'
 jc_nginx_keepalive_timeout: 180
 
+
+####################
+# Awstats settings #
+####################
+# Awstats is a user statistics tool
+
+# Allow awstats access from web to authenticated users only. Set to `0` to disable.
+jc_awstats_auth_users_only: 1
+
+# Define the users/passwords for all users which get access to the statistics page. The following variables should be set in a Vault! 
+jc_developer_users: []
+  # - { user: 'username1', password: 'password1' }
+
 ##################
 # uWSGI settings #
 ##################
@@ -86,17 +106,28 @@ jc_uwsgi_app_template: app-uwsgi.ini.j2
 ###################
 
 jc_packages:
+  # Mandatory middleware
   - nginx
   - uwsgi
   - uwsgi-plugin-python3
+  # Mandatory for the JC Application
   - python3-pip
   - python3-virtualenv
   - python3-venv
   - python-certbot-nginx
   - virtualenvwrapper
+  # Mandatory to pull latest repositories from github:
   - git
   - gettext
+  # Extra hardening to prevent ddos attacks:
   - fail2ban
+  # Mandatory for Awstats:
+  - webalizer
+  - awstats
+  - geoip-database
+  - libtimedate-perl
+  - libclass-dbi-mysql-perl
+  - python-passlib
 
 #####################
 # Database settings #

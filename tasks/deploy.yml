@@ -7,6 +7,7 @@
   with_items:
     - '{{ jc_projects_directory }}'
     - '{{ jc_projects_directory }}/{{ jc_project_name }}'
+    - '{{ jc_awstats_dir }}'
 
 - name: Create version directory
   file:
@@ -180,6 +181,7 @@
     executable: /bin/bash
   when:
     - jc_clean_thumbnail_cache
+    - newversion.changed
 
 - name: Point symlink to new version
   file:

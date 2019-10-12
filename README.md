@@ -56,6 +56,12 @@ jc_superuser_email: <email>
 # The key for the HSV bible
 `jc_hsv_bible_key: xxxxxxx`
 
+7. Set the users who get access to the protected awstats user statistics on `https://<domain>/awstats`
+```yaml
+jc_developer_users:
+  - { user: 'username1', password: 'password1' }
+```
+
 ## Usage
 
 To Update and install the Jesus Commandment Application itself, use the following variables:  
@@ -117,6 +123,25 @@ And rsync the latest media files to the current path, by example:
 
 ### Playbook Example
 
+
+### Configuring the ansible server
+To configure the ansible server in order to install the JesusCommandments application you can take the following steps:
+
+1. Install some required packages:
+`apt-get install ansible`
+
+2. Configure an inventory
+`vi /etc/ansible/hosts`
+
+```
+[jesuscommandments]
+jc-acc ansible_host=<internal ip>
+jc-prod1 ansible_host=<internal ip>
+```
+
+3. Configure a playbook
+
+En example would look something like this:
 ```yaml
 ---
 
@@ -160,3 +185,64 @@ And rsync the latest media files to the current path, by example:
   roles:
     - role: jesus_commandments_server
 ```
+
+4. Configure some group_vars
+
+Set some global group_vars variables which will apply for acc and prod
+`group_vars/jesuscommandments/main.yml`
+```yaml
+jc_hsv_bible_path_temp: "{{ playbook_dir }}/group_vars/jesuscommandments/files/hsv_bible.zip"
+jc_media_files: "{{ playbook_dir }}/group_vars/jesuscommandments/media"
+```
+
+Set some global group_vars vault variables which will apply for acc and prod
+`group_vars/jesuscommandments/vault.yml`
+```yaml
+# The API key to scripture.api.bible
+jc_bible_api_key: xxxxxxxxx 
+# The key for the HSV bible
+jc_hsv_bible_key: xxxxxxxxx
+```
+
+Encrypt the vault:
+`ansible-vault encrypt group_vars/jesuscommandments/vault.ym`
+
+5. Configure some host_vars
+
+Set some host specific host_vars variables which will apply for this host only
+`host_vars/jc-acc/main.yml`
+```yaml
+jc_domain_names:
+  - acc.jesuscommandments.org
+
+jc_production: False
+
+jc_settings_debug: True
+
+jc_developer_ips:
+  - 1.1.1.1
+  - 2.2.2.2
+
+# Superuser settings
+jc_superuser_username: admin
+jc_superuser_email: info@jesuscommandments.org
+```
+
+Set some host specific vault variables which will apply for this host only
+`host_vars/jc-acc/vault.yml`
+```yaml
+jc_secretkey: xxxxx
+
+jc_superuser_password: xxxxx
+
+mysql_user_password: xxxxx
+mysql_root_password: xxxxx
+mysql_user_jc_password: xxxxx
+
+jc_developer_users: 
+  - { username: 'user1', password: 'xxxxx' }
+  - { username: 'user2', password: 'xxxxx' }
+```
+
+Encrypt the vault:
+`ansible-vault encrypt group_vars/jesuscommandments/vault.ym`

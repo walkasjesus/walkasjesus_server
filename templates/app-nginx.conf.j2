@@ -32,6 +32,18 @@ server {
     alias {{ jc_project_path }}/{{ jc_project_title }}/venv/lib/python3.7/site-packages/django/contrib/admin/static/admin/;
     expires {{ jc_nginx_cache_static_files }};
   }
+  location /awstats/ {
+    alias {{ jc_awstats_dir }}/;
 
+    # Deny all but the developers
+    {% for ip in jc_developer_ips %}
+    allow   {{ ip }};
+    {% endfor %}
+    deny    all;
+
+    # Authentication required
+    auth_basic "Administrator’s Area";
+    auth_basic_user_file /etc/awstats/htpasswd.awstats;
+  }
 
 }
