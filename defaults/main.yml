@@ -128,7 +128,10 @@ jc_packages:
   - libtimedate-perl
   - libclass-dbi-mysql-perl
   - python-passlib
-
+  # Mandatory for auto backup
+  - automysqlbackup
+  - mailutils
+  
 #####################
 # Database settings #
 #####################

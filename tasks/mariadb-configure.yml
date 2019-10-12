@@ -9,6 +9,12 @@
     force: "{{ overwrite_global_mycnf }}"
   notify: restart mysql
 
+- name: Copy root password into /etc/mysql/debian.cnf for automysqlbackup
+  replace:
+    path: /etc/mysql/debian.cnf
+    regexp: '^password.*'
+    replace: 'password = "{{ mysql_root_password }}"'
+
 - name: Verify mysql include directory exists.
   file:
     path: "{{ mysql_config_include_dir }}"
