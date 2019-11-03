@@ -9,6 +9,11 @@
     - '{{ jc_projects_directory }}/{{ jc_project_name }}'
     - '{{ jc_awstats_dir }}'
 
+- name: Check if current version exists
+  stat: 
+    path: '{{ jc_projects_directory }}/{{ jc_project_name }}/current'
+  register: currentversion
+
 - name: Create version directory
   file:
     path: '{{ jc_projects_directory }}/{{ jc_project_name }}/{{ jc_app_version }}'
@@ -62,8 +67,6 @@
     group: '{{ jc_app_group }}'
     mode: u=rw,g=rw,o=r
     directory_mode: yes
-  when:
-    - not newversion.changed
 
 - name: Copy previous media files 
   copy:
@@ -76,6 +79,7 @@
     directory_mode: yes
   when:
     - newversion.changed
+    - currentversion.stat.islnk is defined
 
 - name: Copy HSV Bible
   copy:
@@ -97,6 +101,7 @@
     - (newversion.changed) or (jc_force_copy_database)
     - not jc_fill_database
     - jc_db_type != "mariadb"
+    - currentversion.stat.islnk is defined
 
 - name: Install pip dependencies
   pip:

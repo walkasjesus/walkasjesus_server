@@ -81,7 +81,7 @@ jc_domain_names: []
 jc_nginx_cache_static_files: 1d
 jc_nginx_max_fileupload_size: '40M'
 jc_nginx_keepalive_timeout: 180
-
+jc_nginx_client_body_timeout: 1200s
 
 ####################
 # Awstats settings #

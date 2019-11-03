@@ -11,6 +11,8 @@ server {
   location / {
     uwsgi_pass unix://{{ jc_uwsgi_socket }};
     include uwsgi_params;
+    client_body_timeout {{ jc_nginx_client_body_timeout }};
+    uwsgi_read_timeout 1200;
     {% if not jc_production %}
     # Deny all but the developers
     {% for ip in jc_developer_ips %}
