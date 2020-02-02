@@ -69,14 +69,11 @@
     directory_mode: yes
 
 - name: Copy previous media files 
-  copy:
-    src: '{{ jc_project_path }}/{{ jc_project_title }}/media'
-    dest: '{{ jc_git_project_path }}/{{ jc_project_title }}/media'
-    remote_src: yes
-    owner: '{{ jc_app_user }}'
-    group: '{{ jc_app_group }}'
-    mode: u=rw,g=rw,o=r
-    directory_mode: yes
+  synchronize:
+    src: '{{ jc_project_path }}/{{ jc_project_title }}/media/files'
+    dest: '{{ jc_git_project_path }}/{{ jc_project_title }}/media/files'
+    recursive: yes
+  delegate_to: "{{ inventory_hostname }}"
   when:
     - newversion.changed
     - currentversion.stat.islnk is defined
