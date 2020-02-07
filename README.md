@@ -1,8 +1,16 @@
-# server_configuration
+# jesus_commandments_server
+This repository contains IT Automation tools for (Ansible)[https://docs.ansible.com/ansible/latest/index.html] to install & configure all the server components which are required to serve the (Jesus Commandments Framework) (https://github.com/jesuscommandments/jesus_commandments_framework)
 
-This project will install &amp; configure all the server components which are required to serve the [Jesus Commandments App](https://github.com/jesuscommandments/jesus_commandments_app)
+## jesus_commandments_resources
+Repository for the [Jesus Commandments Framework](https://github.com/jesuscommandments/jesus_commandments_framework) where all the resources (movies, songs, blogs, sermons, testimonies, etc) in all languages are stored in a CSV. This CSV can be imported/exported with the [Jesus Commandments Framework](https://github.com/jesuscommandments/jesus_commandments_framework) and the (Jesus Commandments Server) (https://github.com/jesuscommandments/jesus_commandments_server)
 
-## Requirements
+## jesus_commandments_framework
+This repository is the heart of the application which will show all the different components of the Jesus Commandments Application in a fancy Python Framework (Django)[https://www.djangoproject.com/]
+
+## jesus_commandments_biblereferences
+Repository for the Jesus Commandments Framework where all the commandments with all their related Bible References are stored in a CSV. This CSV can be imported/exported with the [Jesus Commandments Framework](https://github.com/jesuscommandments/jesus_commandments_framework) and the (Jesus Commandments Server) (https://github.com/jesuscommandments/jesus_commandments_server)
+
+# Requirements
 
 Thise Ansible role is made for the following setup:  
 
@@ -12,7 +20,7 @@ Thise Ansible role is made for the following setup:
 - We assume that there is a Transparant proxy server in front of our Nginx installation (That one is supposed to offload the SSL traffic and forward the request to this Nginx server). However you can easily edit the Nginx configuration in this role and configure it to your own needs.
 - In order to synchronize the latest version of the Jesus Commandments App, you need a private key to the user {{ git_user }} which is allowed to synchronize the repository. (Ex. place the private key in /home/jesuscommandments/.ssh/id_rsa)
 
-## Installation & Configuration
+# Installation & Configuration
 
 We will Install & Configure:  
 
