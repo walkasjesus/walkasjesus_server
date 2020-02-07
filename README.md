@@ -1,5 +1,5 @@
 # jesus_commandments_server
-This repository contains IT Automation tools for (Ansible)[https://docs.ansible.com/ansible/latest/index.html] to install & configure all the server components which are required to serve the [Jesus Commandments Framework] (https://github.com/jesuscommandments/jesus_commandments_framework)
+This repository contains IT Automation tools for [Ansible](https://docs.ansible.com/ansible/latest/index.html) to install & configure all the server components which are required to serve the [Jesus Commandments Framework] (https://github.com/jesuscommandments/jesus_commandments_framework)
 
 # Requirements
 
