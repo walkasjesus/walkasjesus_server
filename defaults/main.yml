@@ -22,8 +22,10 @@ jc_install_requirements: false
 jc_update_database: false
 # Will create the admin user for the django application
 jc_create_admin_user: false
-# Will import a statix CSV file.
-jc_fill_database: false
+# Will import a static CSV file with all the Commandments and corresponding Bible References from its upstream Github repository.
+jc_import_commandments: false
+# Will import a static CSV file with all the Media files from its upstream Github repository.
+jc_import_media: false
 # Update translation files
 jc_update_translation_files: false
 # Auto translate all files
@@ -57,6 +59,8 @@ jc_settings_debug: False
 jc_git_force: no
 # Will clone the configured origin repository to the {{ jc_git_project_path }}
 jc_git_clone: yes
+#What version of the repository to check out (default HEAD).  This can be the literal string `HEAD', a branch name, a tag name. 
+jc_git_version: HEAD
 # Will update the current git repository to the {{ jc_git_project_path }}
 jc_git_update: yes
 # Warning! ssh key can be required

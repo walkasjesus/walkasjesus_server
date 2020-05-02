@@ -1,6 +1,6 @@
 # server_configuration
 
-This project will install &amp; configure all the server components which are required to serve the [Jesus Commandments App](https://github.com/jesuscommandments/jesus_commandments_app)
+This repository contains IT Automation tools for [Ansible](https://docs.ansible.com/ansible/latest/index.html) to install & configure all the server components which are required to serve the [Jesus Commandments Framework](https://github.com/jesuscommandments/jesus_commandments_framework)
 
 ## Requirements
 
@@ -72,8 +72,10 @@ Will update the current database structure
 `jc_update_database: false`
 Will create the admin user for the django application
 `jc_create_admin_user: false`
-Will import a static CSV file.
-`jc_fill_database: false`
+Will import a static CSV file with all the Commandments and corresponding Bible References from its upstream Github repository.
+`jc_import_commandments: false`
+Will import a static CSV file with all the Media files from its upstream Github repository.
+`jc_import_media: false`
 Update translation files
 `jc_update_translation_files: false`
 Auto translate all files
@@ -93,6 +95,8 @@ jc_developer_ips:
 
 Will clone the configured origin repository to the {{ jc_git_project_path }}
 `jc_git_clone: yes`
+What version of the repository to check out (default HEAD).  This can be the literal string `HEAD', a branch name, a tag name. 
+`jc_git_version: <branchname|tagname>`
 Will update the current git repository to the {{ jc_git_project_path }}
 `jc_git_update: yes`
 Will force a git clone, even if there is no up-to-date and clean local repository
@@ -153,7 +157,8 @@ En example would look something like this:
   vars:
     jc_install_requirements: true
     jc_update_database: true
-    jc_fill_database: true
+    jc_import_commandments: true
+    jc_import_media: true
     jc_update_translation_files: true
     jc_auto_translate_files: false
     jc_app_version: 'version_1.0'
@@ -246,3 +251,23 @@ jc_developer_users:
 
 Encrypt the vault:
 `ansible-vault encrypt group_vars/jesuscommandments/vault.ym`
+
+## Related projects and repositories
+
+The following projects are related to this repository.
+
+### jesus_commandments_framework
+
+This repository is the heart of the application which will show all the different components of the Jesus Commandments Application in a fancy Python Framework [Django](https://www.djangoproject.com/)
+
+### jesus_commandments_biblereferences
+
+Repository for the Jesus Commandments Framework where all the commandments with all their related Bible References are stored in a CSV. This CSV can be imported/exported with the [Jesus Commandments Framework](https://github.com/jesuscommandments/jesus_commandments_framework) and the [Jesus Commandments Server](https://github.com/jesuscommandments/jesus_commandments_server)
+
+### jesus_commandments_media
+
+Repository for the [Jesus Commandments Framework](https://github.com/jesuscommandments/jesus_commandments_framework) where all the resources (movies, songs, blogs, sermons, testimonies, etc) in all languages are stored in a CSV. This CSV can be imported/exported with the [Jesus Commandments Framework](https://github.com/jesuscommandments/jesus_commandments_framework) and the [Jesus Commandments Server](https://github.com/jesuscommandments/jesus_commandments_server)
+
+### jesus_commandments_translations
+
+This repository contains all translation files from English to other languages. We use Google translate to make a first automated translation. The next step for the translator is to review all translated items and acknowledge them through the admin panel of the website.

@@ -38,6 +38,8 @@
     clone: '{{ jc_git_clone }}'
     update: '{{ jc_git_update }}'
     force: '{{ jc_git_force }}'
+    track_submodules: yes
+    version: '{{ jc_git_version }}'
   notify:
     - reload uwsgi
 
@@ -49,6 +51,12 @@
     group: '{{ jc_app_group }}'
   notify:
     - reload uwsgi
+
+- name: Create log directory
+  file:
+    path: '{{ jc_git_project_path }}/{{ jc_project_title }}/log'
+    state: directory
+    owner: '{{ jc_app_user }}'
 
 - name: Deploy superuser config
   template:
@@ -96,7 +104,7 @@
     mode: u=rw,g=rw,o=r
   when:
     - (newversion.changed) or (jc_force_copy_database)
-    - not jc_fill_database
+    - (not jc_import_commandments) or (not jc_import_media)
     - jc_db_type != "mariadb"
     - currentversion.stat.islnk is defined
 
@@ -144,15 +152,25 @@
   when:
     - jc_create_admin_user
 
-- name: Fill database
+- name: Import Commandments
   become: true
   become_user: '{{ jc_app_user }}'
-  shell: "bash fill_database.sh"
+  shell: "bash import_commandments.sh"
   args:
     chdir: "{{ jc_git_project_path }}/{{ jc_project_title }}"
     executable: /bin/bash
   when:
-    - jc_fill_database
+    - jc_import_commandments
+
+- name: Import Media
+  become: true
+  become_user: '{{ jc_app_user }}'
+  shell: "bash import_media.sh"
+  args:
+    chdir: "{{ jc_git_project_path }}/{{ jc_project_title }}"
+    executable: /bin/bash
+  when:
+    - jc_import_media
 
 - name: Update translation files
   become: true
