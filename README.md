@@ -1,4 +1,4 @@
-# server_configuration
+# jesus_commandments_server
 
 This repository contains IT Automation tools for [Ansible](https://docs.ansible.com/ansible/latest/index.html) to install & configure all the server components which are required to serve the [Jesus Commandments Framework](https://github.com/jesuscommandments/jesus_commandments_framework)
 
@@ -24,7 +24,7 @@ We will Install & Configure:
   - Initial installation
   - Update to newer versions
 
-## Mandatory Variables
+### Mandatory Variables
 
 1. Please provide a `jc_secretkey` variable for your django project. We suggest to set this variable in a vault.
 `jc_secretkey: <secretkey of the project>`
@@ -42,18 +42,19 @@ jc_domain_names:
 jc_superuser_username: <username>
 jc_superuser_email: <email>
 ```
-#  we suggest to set the password variable in a vault
+
+we suggest to set the password variable in a vault  
 `jc_superuser_password: <password>`
 
 4. Set the path to the HSV bible texts on the ansible server
 `jc_hsv_bible_path_temp: "{{ playbook_dir }}/group_vars/files/hsv_bible.zip"`
 
 5. Set the API key variable for the scripture.api.bible. You need to get your license @api.bible.
-# The API key to scripture.api.bible
+The API key to scripture.api.bible  
 `jc_bible_api_key: xxxxxxx`
 
 6. Set the key for the HSV bible:
-# The key for the HSV bible
+The key for the HSV bible  
 `jc_hsv_bible_key: xxxxxxx`
 
 7. Set the users who get access to the protected awstats user statistics on `https://<domain>/awstats`
@@ -62,7 +63,7 @@ jc_developer_users:
   - { user: 'username1', password: 'password1' }
 ```
 
-## Usage
+### Usage
 
 To Update and install the Jesus Commandment Application itself, use the following variables:  
 
@@ -128,7 +129,7 @@ And rsync the latest media files to the current path, by example:
 ### Playbook Example
 
 
-### Configuring the ansible server
+#### Configuring the ansible server
 To configure the ansible server in order to install the JesusCommandments application you can take the following steps:
 
 1. Install some required packages:
