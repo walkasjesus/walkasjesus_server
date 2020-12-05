@@ -135,7 +135,9 @@ jc_packages:
   # Mandatory for auto backup
   - automysqlbackup
   - mailutils
-  
+  # Mandatory for automatic pull requests to github
+  - hub
+
 #####################
 # Database settings #
 #####################

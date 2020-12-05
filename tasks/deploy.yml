@@ -152,25 +152,15 @@
   when:
     - jc_create_admin_user
 
-- name: Import Commandments
+- name: Import Commandments & Media
   become: true
   become_user: '{{ jc_app_user }}'
-  shell: "bash import_commandments.sh"
+  shell: "bash IMPORT.sh -q -d"
   args:
     chdir: "{{ jc_git_project_path }}/{{ jc_project_title }}"
     executable: /bin/bash
   when:
     - jc_import_commandments
-
-- name: Import Media
-  become: true
-  become_user: '{{ jc_app_user }}'
-  shell: "bash import_media.sh"
-  args:
-    chdir: "{{ jc_git_project_path }}/{{ jc_project_title }}"
-    executable: /bin/bash
-  when:
-    - jc_import_media
 
 - name: Update translation files
   become: true
