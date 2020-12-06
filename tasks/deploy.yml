@@ -86,14 +86,6 @@
     - newversion.changed
     - currentversion.stat.islnk is defined
 
-- name: Copy HSV Bible
-  copy:
-    src: '{{ jc_hsv_bible_path_temp }}'
-    dest: '{{ jc_projects_directory }}/{{ jc_project_name }}/{{ jc_app_version }}'
-    owner: '{{ jc_app_user }}'
-    group: '{{ jc_app_group }}'
-    mode: u=rw,g=rw,o=r
-
 - name: Copy database from current version to new version
   copy:
     src: '{{ jc_project_path }}/{{ jc_project_title }}/db.sqlite3'
@@ -155,7 +147,7 @@
 - name: Import Commandments & Media
   become: true
   become_user: '{{ jc_app_user }}'
-  shell: "bash IMPORT.sh -q -d"
+  shell: "bash IMPORT.sh -q -d -f"
   args:
     chdir: "{{ jc_git_project_path }}/{{ jc_project_title }}"
     executable: /bin/bash

@@ -46,18 +46,11 @@ jc_superuser_email: <email>
 we suggest to set the password variable in a vault  
 `jc_superuser_password: <password>`
 
-4. Set the path to the HSV bible texts on the ansible server
-`jc_hsv_bible_path_temp: "{{ playbook_dir }}/group_vars/files/hsv_bible.zip"`
-
-5. Set the API key variable for the scripture.api.bible. You need to get your license @api.bible.
+4. Set the API key variable for the scripture.api.bible. You need to get your license @api.bible.
 The API key to scripture.api.bible  
 `jc_bible_api_key: xxxxxxx`
 
-6. Set the key for the HSV bible:
-The key for the HSV bible  
-`jc_hsv_bible_key: xxxxxxx`
-
-7. Set the users who get access to the protected awstats user statistics on `https://<domain>/awstats`
+5. Set the users who get access to the protected awstats user statistics on `https://<domain>/awstats`
 ```yaml
 jc_developer_users:
   - { user: 'username1', password: 'password1' }
@@ -197,7 +190,6 @@ En example would look something like this:
 Set some global group_vars variables which will apply for acc and prod
 `group_vars/jesuscommandments/main.yml`
 ```yaml
-jc_hsv_bible_path_temp: "{{ playbook_dir }}/group_vars/jesuscommandments/files/hsv_bible.zip"
 jc_media_files: "{{ playbook_dir }}/group_vars/jesuscommandments/media"
 ```
 
@@ -206,8 +198,6 @@ Set some global group_vars vault variables which will apply for acc and prod
 ```yaml
 # The API key to scripture.api.bible
 jc_bible_api_key: xxxxxxxxx 
-# The key for the HSV bible
-jc_hsv_bible_key: xxxxxxxxx
 ```
 
 Encrypt the vault:
