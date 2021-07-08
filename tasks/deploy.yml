@@ -3,83 +3,83 @@
   file:
     path: '{{ item }}'
     state: directory
-    owner: '{{ jc_app_user }}'
+    owner: '{{ waj_app_user }}'
   with_items:
-    - '{{ jc_projects_directory }}'
-    - '{{ jc_projects_directory }}/{{ jc_project_name }}'
-    - '{{ jc_awstats_dir }}'
+    - '{{ waj_projects_directory }}'
+    - '{{ waj_projects_directory }}/{{ waj_project_name }}'
+    - '{{ waj_awstats_dir }}'
 
 - name: Check if current version exists
   stat: 
-    path: '{{ jc_projects_directory }}/{{ jc_project_name }}/current'
+    path: '{{ waj_projects_directory }}/{{ waj_project_name }}/current'
   register: currentversion
 
 - name: Create version directory
   file:
-    path: '{{ jc_projects_directory }}/{{ jc_project_name }}/{{ jc_app_version }}'
+    path: '{{ waj_projects_directory }}/{{ waj_project_name }}/{{ waj_app_version }}'
     state: directory
-    owner: '{{ jc_app_user }}'
+    owner: '{{ waj_app_user }}'
   register: newversion
 
 - name: Change recursively all permissions 
   file:
-    dest: '{{ jc_projects_directory }}/{{ jc_project_name }}/{{ jc_app_version }}'
-    owner: '{{ jc_app_user }}'
-    group: '{{ jc_app_group }}'
+    dest: '{{ waj_projects_directory }}/{{ waj_project_name }}/{{ waj_app_version }}'
+    owner: '{{ waj_app_user }}'
+    group: '{{ waj_app_group }}'
     mode: u=rwX,g=rwX,o=rX
     recurse: yes
 
 - name: Clone git repository    
   become: true
-  become_user: '{{ jc_git_user }}'
+  become_user: '{{ waj_git_user }}'
   git:
-    repo: '{{ jc_git_repository }}'
-    dest: '{{ jc_git_project_path }}'
-    clone: '{{ jc_git_clone }}'
-    update: '{{ jc_git_update }}'
-    force: '{{ jc_git_force }}'
+    repo: '{{ waj_git_repository }}'
+    dest: '{{ waj_git_project_path }}'
+    clone: '{{ waj_git_clone }}'
+    update: '{{ waj_git_update }}'
+    force: '{{ waj_git_force }}'
     track_submodules: yes
-    version: '{{ jc_git_version }}'
+    version: '{{ waj_git_version }}'
   notify:
     - reload uwsgi
 
 - name: Deploy config
   template:
     src: 'settings.py.j2'
-    dest: '{{ jc_git_project_path }}/{{ jc_project_title }}/{{ jc_project_title }}/settings.py'
-    owner: '{{ jc_app_user }}'
-    group: '{{ jc_app_group }}'
+    dest: '{{ waj_git_project_path }}/{{ waj_project_title }}/{{ waj_project_title }}/settings.py'
+    owner: '{{ waj_app_user }}'
+    group: '{{ waj_app_group }}'
   notify:
     - reload uwsgi
 
 - name: Create log directory
   file:
-    path: '{{ jc_git_project_path }}/{{ jc_project_title }}/log'
+    path: '{{ waj_git_project_path }}/{{ waj_project_title }}/log'
     state: directory
-    owner: '{{ jc_app_user }}'
+    owner: '{{ waj_app_user }}'
 
 - name: Deploy superuser config
   template:
     src: 'import_users.py.j2'
-    dest: '{{ jc_git_project_path }}/{{ jc_project_title }}/account_app/management/commands/import_users.py'
-    owner: '{{ jc_app_user }}'
-    group: '{{ jc_app_group }}'
+    dest: '{{ waj_git_project_path }}/{{ waj_project_title }}/account_app/management/commands/import_users.py'
+    owner: '{{ waj_app_user }}'
+    group: '{{ waj_app_group }}'
   notify:
     - reload uwsgi
 
 - name: Copy media files 
   copy:
-    src: '{{ jc_media_files }}'
-    dest: '{{ jc_git_project_path }}/{{ jc_project_title }}'
-    owner: '{{ jc_app_user }}'
-    group: '{{ jc_app_group }}'
+    src: '{{ waj_media_files }}'
+    dest: '{{ waj_git_project_path }}/{{ waj_project_title }}'
+    owner: '{{ waj_app_user }}'
+    group: '{{ waj_app_group }}'
     mode: u=rw,g=rw,o=r
     directory_mode: yes
 
 - name: Copy previous media files 
   synchronize:
-    src: '{{ jc_project_path }}/{{ jc_project_title }}/media/files'
-    dest: '{{ jc_git_project_path }}/{{ jc_project_title }}/media/files'
+    src: '{{ waj_project_path }}/{{ waj_project_title }}/media/files'
+    dest: '{{ waj_git_project_path }}/{{ waj_project_title }}/media/files'
     recursive: yes
   delegate_to: "{{ inventory_hostname }}"
   when:
@@ -88,106 +88,106 @@
 
 - name: Copy database from current version to new version
   copy:
-    src: '{{ jc_project_path }}/{{ jc_project_title }}/db.sqlite3'
-    dest: '{{ jc_git_project_path }}/{{ jc_project_title }}/db.sqlite3'
+    src: '{{ waj_project_path }}/{{ waj_project_title }}/db.sqlite3'
+    dest: '{{ waj_git_project_path }}/{{ waj_project_title }}/db.sqlite3'
     remote_src: yes
-    owner: '{{ jc_app_user }}'
-    group: '{{ jc_app_group }}'
+    owner: '{{ waj_app_user }}'
+    group: '{{ waj_app_group }}'
     mode: u=rw,g=rw,o=r
   when:
-    - (newversion.changed) or (jc_force_copy_database)
-    - (not jc_import_commandments) or (not jc_import_media)
-    - jc_db_type != "mariadb"
+    - (newversion.changed) or (waj_force_copy_database)
+    - (not waj_import_commandments) or (not waj_import_media)
+    - waj_db_type != "mariadb"
     - currentversion.stat.islnk is defined
 
 - name: Install pip dependencies
   pip:
     name: uWSGI
-    virtualenv: '{{ jc_python_env }}'
+    virtualenv: '{{ waj_python_env }}'
     virtualenv_python: python3
 
 - name: Change recursively all permissions 
   file:
-    dest: '{{ jc_projects_directory }}/{{ jc_project_name }}/{{ jc_app_version }}'
-    owner: '{{ jc_app_user }}'
-    group: '{{ jc_app_group }}'
+    dest: '{{ waj_projects_directory }}/{{ waj_project_name }}/{{ waj_app_version }}'
+    owner: '{{ waj_app_user }}'
+    group: '{{ waj_app_group }}'
     mode: u=rwX,g=rwX,o=rX
     recurse: yes
 
 - name: Install requirements
   become: true
-  become_user: '{{ jc_app_user }}'
+  become_user: '{{ waj_app_user }}'
   shell: "bash install.sh"
   args:
-    chdir: "{{ jc_git_project_path }}/{{ jc_project_title }}"
+    chdir: "{{ waj_git_project_path }}/{{ waj_project_title }}"
     executable: /bin/bash
   when:
-    - jc_install_requirements
+    - waj_install_requirements
 
 - name: Update database
   become: true
-  become_user: '{{ jc_app_user }}'
+  become_user: '{{ waj_app_user }}'
   shell: "bash update_database.sh"
   args:
-    chdir: "{{ jc_git_project_path }}/{{ jc_project_title }}"
+    chdir: "{{ waj_git_project_path }}/{{ waj_project_title }}"
     executable: /bin/bash
   when:
-    - jc_update_database
+    - waj_update_database
 
 - name: Create application admin user
   become: true
-  become_user: '{{ jc_app_user }}'
+  become_user: '{{ waj_app_user }}'
   shell: "bash create_admin_user.sh"
   args:
-    chdir: "{{ jc_git_project_path }}/{{ jc_project_title }}"
+    chdir: "{{ waj_git_project_path }}/{{ waj_project_title }}"
     executable: /bin/bash
   when:
-    - jc_create_admin_user
+    - waj_create_admin_user
 
 - name: Import Commandments & Media
   become: true
-  become_user: '{{ jc_app_user }}'
+  become_user: '{{ waj_app_user }}'
   shell: "bash IMPORT.sh -q -d -f"
   args:
-    chdir: "{{ jc_git_project_path }}/{{ jc_project_title }}"
+    chdir: "{{ waj_git_project_path }}/{{ waj_project_title }}"
     executable: /bin/bash
   when:
-    - jc_import_commandments
+    - waj_import_commandments
 
 - name: Update translation files
   become: true
-  become_user: '{{ jc_app_user }}'
+  become_user: '{{ waj_app_user }}'
   shell: "bash update_translation_files.sh"
   args:
-    chdir: "{{ jc_git_project_path }}/{{ jc_project_title }}"
+    chdir: "{{ waj_git_project_path }}/{{ waj_project_title }}"
     executable: /bin/bash
   when:
-    - jc_update_translation_files
+    - waj_update_translation_files
 
 - name: Auto translate files
   become: true
-  become_user: '{{ jc_app_user }}'
+  become_user: '{{ waj_app_user }}'
   shell: "bash auto_translate_files.sh"
   args:
-    chdir: "{{ jc_git_project_path }}/{{ jc_project_title }}"
+    chdir: "{{ waj_git_project_path }}/{{ waj_project_title }}"
     executable: /bin/bash
   when:
-    - jc_auto_translate_files
+    - waj_auto_translate_files
 
 - name: Clean Thumbnail Cache
   become: true
-  become_user: '{{ jc_app_user }}'
+  become_user: '{{ waj_app_user }}'
   shell: "bash clean_thumbnail_cache.sh"
   args:
-    chdir: "{{ jc_git_project_path }}/{{ jc_project_title }}"
+    chdir: "{{ waj_git_project_path }}/{{ waj_project_title }}"
     executable: /bin/bash
   when:
-    - jc_clean_thumbnail_cache
+    - waj_clean_thumbnail_cache
     - newversion.changed
 
 - name: Point symlink to new version
   file:
-    src: '{{ jc_projects_directory }}/{{ jc_project_name }}/{{ jc_app_version }}'
-    dest: '{{ jc_projects_directory }}/{{ jc_project_name }}/current'
+    src: '{{ waj_projects_directory }}/{{ waj_project_name }}/{{ waj_app_version }}'
+    dest: '{{ waj_projects_directory }}/{{ waj_project_name }}/current'
     state: link
   notify: restart uwsgi

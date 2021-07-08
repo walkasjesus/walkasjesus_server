@@ -1,6 +1,6 @@
 [uwsgi]
-project = {{ jc_project_title }}
-base = {{ jc_project_path }}
+project = {{ waj_project_title }}
+base = {{ waj_project_path }}
 
 chdir = %(base)/%(project)
 home = %(base)/%(project)/%(project)
@@ -11,8 +11,8 @@ plugins = python3
 master = true
 processes = 5
 
-socket = {{ jc_uwsgi_socket }}
-chown-socket = {{ jc_app_user }}:{{ jc_app_group }}
+socket = {{ waj_uwsgi_socket }}
+chown-socket = {{ waj_app_user }}:{{ waj_app_group }}
 chmod-socket = 660
 vacuum = true
 

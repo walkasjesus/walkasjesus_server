@@ -2,11 +2,11 @@
 - name: Install system dependencies
   become: true
   apt:
-    name: "{{ jc_packages }}"
+    name: "{{ waj_packages }}"
     state: present
 
 - name: Add the git user with a bash shell
   user:
-    name: '{{ jc_git_user }}'
+    name: '{{ waj_git_user }}'
     shell: /bin/bash
-    group: '{{ jc_app_group }}'
+    group: '{{ waj_app_group }}'

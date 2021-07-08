@@ -1,21 +1,21 @@
 server {
   listen 80;
   listen [::]:80;
-  server_name {{ jc_domain_names | join(" ") }};
-  client_max_body_size {{ jc_nginx_max_fileupload_size }};
+  server_name {{ waj_domain_names | join(" ") }};
+  client_max_body_size {{ waj_nginx_max_fileupload_size }};
 
   set_real_ip_from 0.0.0.0/0;
   real_ip_header X-Real-IP;
   real_ip_recursive on;
 
   location / {
-    uwsgi_pass unix://{{ jc_uwsgi_socket }};
+    uwsgi_pass unix://{{ waj_uwsgi_socket }};
     include uwsgi_params;
-    client_body_timeout {{ jc_nginx_client_body_timeout }};
+    client_body_timeout {{ waj_nginx_client_body_timeout }};
     uwsgi_read_timeout 1200;
-    {% if not jc_production %}
+    {% if not waj_production %}
     # Deny all but the developers
-    {% for ip in jc_developer_ips %}
+    {% for ip in waj_developer_ips %}
     allow   {{ ip }};
     {% endfor %}
     deny    all;
@@ -23,22 +23,22 @@ server {
   }
 
   location /static/ {
-    alias {{ jc_project_path }}/{{ jc_project_title }}/static/;
-    expires {{ jc_nginx_cache_static_files }};
+    alias {{ waj_project_path }}/{{ waj_project_title }}/static/;
+    expires {{ waj_nginx_cache_static_files }};
   }
   location /media/ {
-    alias {{ jc_project_path }}/{{ jc_project_title }}/media/;
-    expires {{ jc_nginx_cache_static_files }};
+    alias {{ waj_project_path }}/{{ waj_project_title }}/media/;
+    expires {{ waj_nginx_cache_static_files }};
   }
   location /static/admin/ {
-    alias {{ jc_project_path }}/{{ jc_project_title }}/venv/lib/python3.7/site-packages/django/contrib/admin/static/admin/;
-    expires {{ jc_nginx_cache_static_files }};
+    alias {{ waj_project_path }}/{{ waj_project_title }}/venv/lib/python3.7/site-packages/django/contrib/admin/static/admin/;
+    expires {{ waj_nginx_cache_static_files }};
   }
   location /awstats/ {
-    alias {{ jc_awstats_dir }}/;
+    alias {{ waj_awstats_dir }}/;
 
     # Deny all but the developers
-    {% for ip in jc_developer_ips %}
+    {% for ip in waj_developer_ips %}
     allow   {{ ip }};
     {% endfor %}
     deny    all;

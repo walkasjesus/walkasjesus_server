@@ -4,84 +4,84 @@
 ####################
 
 # App version (can be manually chosen. If a new one is set, a new directory will be created. Backup can be restored by repoint the symlink)
-jc_app_version: 'version_1.0'
+waj_app_version: 'version_1.0'
 # When a new version is installed, the database is copied over from the current version. In some circumestances you want to force this.
-jc_force_copy_database: false
+waj_force_copy_database: false
 
 # Puth this value to true if the site is running production on this group of hosts
-jc_production: true
-# When `jc_production` is set to false, the following list needs to be filled to whitelist the developer ip's.
-# When `jc_awstats_auth_users_only` is set to 1, the following list needs to be filled to whitelist the developer ip's
-jc_developer_ips: []
+waj_production: true
+# When `waj_production` is set to false, the following list needs to be filled to whitelist the developer ip's.
+# When `waj_awstats_auth_users_only` is set to 1, the following list needs to be filled to whitelist the developer ip's
+waj_developer_ips: []
   # - 1.1.1.1
   # - 2.2.2.2
 
 # Will install all requirements
-jc_install_requirements: false
+waj_install_requirements: false
 # Will update the current database structure
-jc_update_database: false
+waj_update_database: false
 # Will create the admin user for the django application
-jc_create_admin_user: false
+waj_create_admin_user: false
 # Will import a static CSV file with all the Commandments and corresponding Bible References from its upstream Github repository.
-jc_import_commandments: false
+waj_import_commandments: false
 # Will import a static CSV file with all the Media files from its upstream Github repository.
-jc_import_media: false
+waj_import_media: false
 # Update translation files
-jc_update_translation_files: false
+waj_update_translation_files: false
 # Auto translate all files
-jc_auto_translate_files: false
+waj_auto_translate_files: false
 # Clean Thumbnail Cache
-jc_clean_thumbnail_cache: false
+waj_clean_thumbnail_cache: false
 
 # General settings
-jc_config_file: '{{ jc_project_path }}/{{ jc_project_title }}/settings.py'
-jc_project_name: 'jesuscommandments'
-jc_project_config_name: 'jesuscommandments'
-jc_project_title: 'jesus_commandments_website'
-jc_projects_directory: '/var/www'
-jc_project_path: '{{ jc_projects_directory }}/{{ jc_project_name }}/current/{{ jc_project_title }}'
-jc_python_env: '{{ jc_git_project_path }}/{{ jc_project_title }}/venv'
-jc_media_files: "{{ playbook_dir }}/group_vars/jesuscommandments/media"
+waj_config_file: '{{ waj_project_path }}/{{ waj_project_title }}/settings.py'
+waj_project_name: 'jesuscommandments'
+waj_project_config_name: 'jesuscommandments'
+waj_project_title: 'jesus_commandments_website'
+waj_projects_directory: '/var/www'
+waj_project_path: '{{ waj_projects_directory }}/{{ waj_project_name }}/current/{{ waj_project_title }}'
+waj_python_env: '{{ waj_git_project_path }}/{{ waj_project_title }}/venv'
+waj_media_files: "{{ playbook_dir }}/group_vars/jesuscommandments/media"
 # Awstats directory
-jc_awstats_dir: "{{ jc_projects_directory }}/{{ jc_project_name }}/awstats"
+waj_awstats_dir: "{{ waj_projects_directory }}/{{ waj_project_name }}/awstats"
 
 #Settings.py
-jc_settings_debug: False
+waj_settings_debug: False
 
 ################
 # Git settings #
 ################
 # Will force a git clone, even if there is no up-to-date and clean local repository
-jc_git_force: no
-# Will clone the configured origin repository to the {{ jc_git_project_path }}
-jc_git_clone: yes
+waj_git_force: no
+# Will clone the configured origin repository to the {{ waj_git_project_path }}
+waj_git_clone: yes
 #What version of the repository to check out (default HEAD).  This can be the literal string `HEAD', a branch name, a tag name. 
-jc_git_version: HEAD
-# Will update the current git repository to the {{ jc_git_project_path }}
-jc_git_update: yes
+waj_git_version: HEAD
+# Will update the current git repository to the {{ waj_git_project_path }}
+waj_git_update: yes
 # Warning! ssh key can be required
-jc_git_repository: 'git@github.com:jesuscommandments/jesus_commandments.git'
-jc_git_user: jesuscommandments
-jc_git_project_path: '{{ jc_projects_directory }}/{{ jc_project_name }}/{{ jc_app_version }}/{{ jc_project_title }}'
+waj_git_repository: 'git@github.com:jesuscommandments/jesus_commandments.git'
+waj_git_user: jesuscommandments
+waj_git_project_path: '{{ waj_projects_directory }}/{{ waj_project_name }}/{{ waj_app_version }}/{{ waj_project_title }}'
 
 ##################
 # Nginx settings #
 ##################
 
-jc_nginx_main_template: nginx.conf.j2
-jc_nginx_app_template: app-nginx.conf.j2
+waj_nginx_main_template: nginx.conf.j2
+waj_nginx_app_template: app-nginx.conf.j2
 
-jc_app_user: www-data
-jc_app_group: www-data
+waj_app_user: www-data
+waj_app_group: www-data
 
 # Define your list of domain names here
-jc_domain_names: []
+waj_domain_names: []
 
 # How long nginx should serve static files (By Example '1d' or 'max')
-jc_nginx_cache_static_files: 1d
-jc_nginx_max_fileupload_size: '40M'
-jc_nginx_keepalive_timeout: 180
-jc_nginx_client_body_timeout: 1200s
+waj_nginx_cache_static_files: 1d
+waj_nginx_max_fileupload_size: '40M'
+waj_nginx_keepalive_timeout: 180
+waj_nginx_client_body_timeout: 1200s
 
 ####################
 # Awstats settings #
@@ -89,23 +89,23 @@ jc_nginx_client_body_timeout: 1200s
 # Awstats is a user statistics tool
 
 # Allow awstats access from web to authenticated users only. Set to `0` to disable.
-jc_awstats_auth_users_only: 1
+waj_awstats_auth_users_only: 1
 
 # Define the users/passwords for all users which get access to the statistics page. The following variables should be set in a Vault! 
-jc_developer_users: []
+waj_developer_users: []
   # - { user: 'username1', password: 'password1' }
 
 ##################
 # uWSGI settings #
 ##################
 
-jc_uwsgi_app_template: app-uwsgi.ini.j2
+waj_uwsgi_app_template: app-uwsgi.ini.j2
 
 ###################
 # System Packages #
 ###################
 
-jc_packages:
+waj_packages:
   # Mandatory middleware
   - nginx
   - uwsgi
@@ -139,8 +139,8 @@ jc_packages:
 #####################
 
 ### First you need to define if you want to use a database or rather a plain sqlite file:
-# jc_db_type: sqlite
-jc_db_type: mariadb
+# waj_db_type: sqlite
+waj_db_type: mariadb
 
 # Set this to the user ansible is logging in as - should have root
 # or sudo access
@@ -238,15 +238,15 @@ mysql_config_include_files: []
 # Jesus Commandments Database Settings #
 ########################################
 
-mysql_db_jc_name: jcdatabase
-mysql_db_jc_collation: utf8_general_ci
-mysql_db_jc_encoding: utf8
-mysql_db_jc_state: present
+mysql_db_waj_name: jcdatabase
+mysql_db_waj_collation: utf8_general_ci
+mysql_db_waj_encoding: utf8
+mysql_db_waj_state: present
 
-mysql_user_jc_name: jcsystem
-#mysql_user_jc_password: password
-mysql_user_jc_host: 127.0.0.1
-mysql_user_jc_priv: "jcdatabase.*:ALL"
-mysql_user_jc_state: present
-#mysql_user_jc_append_privs:
-#mysql_user_jc_encrypted:
+mysql_user_waj_name: jcsystem
+#mysql_user_waj_password: password
+mysql_user_waj_host: 127.0.0.1
+mysql_user_waj_priv: "jcdatabase.*:ALL"
+mysql_user_waj_state: present
+#mysql_user_waj_append_privs:
+#mysql_user_waj_encrypted:

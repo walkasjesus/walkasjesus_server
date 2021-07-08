@@ -3,7 +3,7 @@
   set_fact: 
     list: "{{ item.username }}"
   with_items:
-    - "{{ jc_developer_users }}"
+    - "{{ waj_developer_users }}"
   register: list_result
 
 - name: make a userlist var
@@ -17,11 +17,11 @@
     line: "{{ item.property }}={{ item.value }}"
   with_items:
     - { property: 'LogFile', value: "\"/var/log/nginx/access.log\"" }
-    - { property: 'SiteDomain', value: "\"{{ jc_domain_names | first }}\"" }
-    - { property: 'HostAliases', value: "\"localhost 127.0.0.1 {{ jc_domain_names | join (' ') }}\"" }
-    - { property: 'AllowAccessFromWebToAuthenticatedUsersOnly', value: "\"{{ jc_awstats_auth_users_only }}\"" }
+    - { property: 'SiteDomain', value: "\"{{ waj_domain_names | first }}\"" }
+    - { property: 'HostAliases', value: "\"localhost 127.0.0.1 {{ waj_domain_names | join (' ') }}\"" }
+    - { property: 'AllowAccessFromWebToAuthenticatedUsersOnly', value: "\"{{ waj_awstats_auth_users_only }}\"" }
     - { property: 'AllowAccessFromWebToFollowingAuthenticatedUsers', value: "\"{{ userlist | join (' ') }}\"" }
-    - { property: 'AllowAccessFromWebToFollowingIPAddresses', value: "\"{{ jc_developer_ips | join (' ') }}\"" }
+    - { property: 'AllowAccessFromWebToFollowingIPAddresses', value: "\"{{ waj_developer_ips | join (' ') }}\"" }
 
 - htpasswd:
     path: /etc/awstats/htpasswd.awstats
@@ -29,14 +29,14 @@
     password: "{{ item.password }}"
     owner: root
     group: www-data
-    mode: 0640
+    mode: '0640'
   with_items:
-    - "{{ jc_developer_users }}"
+    - "{{ waj_developer_users }}"
 
 - name: Add cron job for awstats
   cron:
     name: Awstats user statistics
-    job: "/usr/lib/cgi-bin/awstats.pl -config=/etc/awstats/awstats.conf -update -output > {{ jc_awstats_dir }}/index.html"
+    job: "/usr/lib/cgi-bin/awstats.pl -config=/etc/awstats/awstats.conf -update -output > {{ waj_awstats_dir }}/index.html"
     minute: "0"
     hour: "*"
     user: "root"
@@ -44,7 +44,7 @@
 - name: Configure main nginx config file
   become: true
   template:
-    src: '{{ jc_nginx_main_template }}'
+    src: '{{ waj_nginx_main_template }}'
     dest: '/etc/nginx/nginx.conf'
   notify:
     - restart nginx
@@ -52,16 +52,16 @@
 - name: Configure django nginx config file
   become: true
   template:
-    src: '{{ jc_nginx_app_template }}'
-    dest: '/etc/nginx/sites-available/{{ jc_project_config_name }}.conf'
+    src: '{{ waj_nginx_app_template }}'
+    dest: '/etc/nginx/sites-available/{{ waj_project_config_name }}.conf'
   notify:
     - restart nginx
 
 - name: Enable nginx app
   become: true
   file:
-    src: '/etc/nginx/sites-available/{{ jc_project_config_name }}.conf'
-    dest: '/etc/nginx/sites-enabled/{{ jc_project_config_name }}.conf'
+    src: '/etc/nginx/sites-available/{{ waj_project_config_name }}.conf'
+    dest: '/etc/nginx/sites-enabled/{{ waj_project_config_name }}.conf'
     state: link
   notify:
     - restart nginx
@@ -69,22 +69,22 @@
 - name: Create socket directory
   become: true
   file:
-    path: '{{ jc_dir_uwsgi_socket }}'
+    path: '{{ waj_dir_uwsgi_socket }}'
     state: directory
 
 - name: Configure uwsgi app
   become: true
   template:
-      src: '{{ jc_uwsgi_app_template }}'
-      dest: '/etc/uwsgi/apps-available/{{ jc_project_config_name }}.ini'
+      src: '{{ waj_uwsgi_app_template }}'
+      dest: '/etc/uwsgi/apps-available/{{ waj_project_config_name }}.ini'
   notify:
     - restart uwsgi
 
 - name: Enable uwsgi app
   become: true
   file:
-      dest: '/etc/uwsgi/apps-enabled/{{ jc_project_config_name }}.ini'
-      src: '/etc/uwsgi/apps-available/{{ jc_project_config_name }}.ini'
+      dest: '/etc/uwsgi/apps-enabled/{{ waj_project_config_name }}.ini'
+      src: '/etc/uwsgi/apps-available/{{ waj_project_config_name }}.ini'
       state: link
   notify:
     - restart uwsgi
