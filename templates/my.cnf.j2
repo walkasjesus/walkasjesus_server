@@ -71,7 +71,7 @@ lower_case_table_names = {{ mysql_lower_case_table_names }}
 event_scheduler = {{ mysql_event_scheduler_state }}
 
 # InnoDB settings.
-{% if mysql_supports_innodb_large_prefix and '8.0.' not in mysql_cli_version.stdout %}
+{% if mysql_supports_innodb_large_prefix and '8.0.' not in mysql_cli_version.stdout and mysql_daemon != 'mariadb' %}
 innodb_large_prefix = {{ mysql_innodb_large_prefix }}
 innodb_file_format = {{ mysql_innodb_file_format }}
 {% endif %}

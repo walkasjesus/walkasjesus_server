@@ -4,5 +4,5 @@ from django.core.management import BaseCommand
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        User.objects.create_superuser(username='{{ jc_superuser_username }}', password='{{ jc_superuser_password }}', email='{{ jc_superuser_email }}')
+        User.objects.create_superuser(username='{{ waj_superuser_username }}', password='{{ waj_superuser_password }}', email='{{ waj_superuser_email }}')
 
