@@ -17,3 +17,11 @@ chmod-socket = 660
 vacuum = true
 
 enable-threads = true
+
+# Django cache backend environment variables
+env = DJANGO_CACHE_BACKEND={{ waj_django_cache_backend }}
+env = DJANGO_CACHE_LOCATION={{ waj_django_cache_location }}
+env = DISABLE_CACHE_FOR_DEBUG={{ waj_disable_cache_for_debug | lower }}
+
+# Geo-location redirect
+env = GEO_REDIRECT_ENABLED={{ waj_geo_redirect_enabled | default(False) | lower }}

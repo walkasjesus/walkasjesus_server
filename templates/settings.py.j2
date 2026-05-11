@@ -56,6 +56,10 @@ DATABASES = {
         'PASSWORD': '{{ waj_mysql_user_password }}',
         'HOST': '{{ waj_mysql_user_host }}',
         'PORT': '',
+        'OPTIONS': {
+            'charset': 'utf8mb4',
+            'init_command': "SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci",
+        },
     }
 {% else %}
     'default': {
@@ -86,13 +90,44 @@ LOGIN_URL = '/account/login/'
 LOGIN_REDIRECT_URL = '/admin_portal/'
 LOGOUT_REDIRECT_URL = '/'
 
+# Cache backend configuration
+# Local default: FileBasedCache (persists across webserver restarts).
+# Production Redis: set these environment variables:
+# - DJANGO_CACHE_BACKEND=django_redis.cache.RedisCache
+# - DJANGO_CACHE_LOCATION=redis://127.0.0.1:6379/1 (adjust host/db)
+# Also install django-redis in the production environment.
+DJANGO_CACHE_BACKEND = os.getenv('DJANGO_CACHE_BACKEND', 'django.core.cache.backends.filebased.FileBasedCache')
+DJANGO_CACHE_LOCATION = os.getenv('DJANGO_CACHE_LOCATION', os.path.join(BASE_DIR, '.django_cache'))
+
+if DJANGO_CACHE_BACKEND == 'django.core.cache.backends.filebased.FileBasedCache':
+    os.makedirs(DJANGO_CACHE_LOCATION, exist_ok=True)
+
 CACHES = {
     'default': {
-        # 'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        'LOCATION': 'unique-snowflake-jesus_commandments-1',
+        'BACKEND': DJANGO_CACHE_BACKEND,
+        'LOCATION': DJANGO_CACHE_LOCATION,
     }
 }
+
+if DJANGO_CACHE_BACKEND == 'django_redis.cache.RedisCache':
+    CACHES['default']['OPTIONS'] = {
+        'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+    }
+
+DISABLE_CACHE_FOR_DEBUG = os.getenv('DISABLE_CACHE_FOR_DEBUG', 'False').lower() == 'true'
+if DISABLE_CACHE_FOR_DEBUG:
+    CACHES['default'] = {
+        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+    }
+
+THUMBNAIL_ENGINE = 'sorl.thumbnail.engines.pil_engine.Engine'
+THUMBNAIL_DEBUG = True
+
+# Geo-location based routing
+# Redirect users from Netherlands to Dutch domain, others to English domain
+GEO_REDIRECT_ENABLED = os.getenv('GEO_REDIRECT_ENABLED', 'False').lower() == 'true'
+GEO_REDIRECT_NL_DOMAIN = 'acc.wandelalsjezus.nl'  # Dutch domain
+GEO_REDIRECT_EN_DOMAIN = 'acc.walkasjesus.org'   # English domain (fallback)
 
 # Monitoring application
 if not DEBUG:

@@ -32,6 +32,16 @@ waj_update_translation_files: false
 waj_auto_translate_files: false
 # Clean Thumbnail Cache
 waj_clean_thumbnail_cache: false
+# Import all data (Commandments, Lessons, Law of Messiah, Maimonides, Media)
+waj_import_lessons: false
+waj_import_law_of_messiah: false
+waj_import_law_of_messiah_drawings: false
+waj_import_maimonides: false
+waj_import_media_lessons: false
+# Delete and reimport all data
+waj_delete_import_database: false
+# Force import even if data is up-to-date
+waj_force_import: false
 
 # General settings
 waj_config_file: '{{ waj_project_path }}/{{ waj_project_title }}/settings.py'
@@ -68,6 +78,8 @@ waj_git_track_submodules: yes
 waj_git_repository: 'https://github.com/walkasjesus/walkasjesus_framework.git'
 waj_git_user: '{{ waj_app_user }}'
 waj_git_project_path: '{{ waj_projects_directory }}/{{ waj_project_name }}/{{ waj_app_version }}/{{ waj_project_title }}'
+waj_apply_local_overrides: true
+waj_local_framework_source: "{{ playbook_dir }}/prerequisites/walkasjesus_framework/walkasjesus_website"
 
 ##################
 # Nginx settings #
@@ -110,6 +122,21 @@ waj_developer_users: []
 ##################
 
 waj_uwsgi_app_template: app-uwsgi.ini.j2
+
+###################
+# Redis settings  #
+###################
+
+waj_use_redis_cache: false
+waj_redis_host: localhost
+waj_redis_port: 6379
+waj_redis_db: 1
+waj_redis_password: ""
+
+# Django cache backend environment variables
+waj_django_cache_backend: "{{ 'django_redis.cache.RedisCache' if waj_use_redis_cache else 'django.core.cache.backends.filebased.FileBasedCache' }}"
+waj_django_cache_location: "{{ 'redis://' + waj_redis_host + ':' + waj_redis_port|string + '/' + waj_redis_db|string if waj_use_redis_cache else '/var/cache/walkasjesus' }}"
+waj_disable_cache_for_debug: False
 
 ###################
 # System Packages #

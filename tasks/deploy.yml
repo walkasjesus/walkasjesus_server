@@ -75,6 +75,35 @@
     chdir: '{{ waj_git_project_path }}'
   when: waj_git_track_submodules | bool
 
+- name: Check local framework override files
+  stat:
+    path: "{{ waj_local_framework_source }}/{{ item.src }}"
+  loop:
+    - { src: 'walkasjesus_website/middleware.py', dest: 'walkasjesus_website/middleware.py' }
+    - { src: 'walkasjesus_website/base_settings.py', dest: 'walkasjesus_website/base_settings.py' }
+    - { src: 'walkasjesus_app/views/user_preferences.py', dest: 'walkasjesus_app/views/user_preferences.py' }
+    - { src: 'walkasjesus_app/urls.py', dest: 'walkasjesus_app/urls.py' }
+    - { src: 'walkasjesus_app/templates/commandments/detail.html', dest: 'walkasjesus_app/templates/commandments/detail.html' }
+    - { src: 'static/js/customjs.js', dest: 'static/js/customjs.js' }
+  register: waj_local_override_stats
+  when: waj_apply_local_overrides | bool
+  delegate_to: localhost
+  become: false
+
+- name: Deploy local framework override files
+  copy:
+    src: "{{ waj_local_framework_source }}/{{ item.item.src }}"
+    dest: "{{ waj_git_project_path }}/{{ waj_project_title }}/{{ item.item.dest }}"
+    owner: '{{ waj_app_user }}'
+    group: '{{ waj_app_group }}'
+    mode: u=rw,g=r,o=r
+  loop: "{{ waj_local_override_stats.results }}"
+  when:
+    - waj_apply_local_overrides | bool
+    - item.stat.exists | default(false)
+  notify:
+    - reload uwsgi
+
 - name: Deploy config
   template:
     src: 'settings.py.j2'
@@ -193,6 +222,22 @@
     mode: u=rwX,g=rwX,o=rX
     recurse: yes
 
+- name: Ensure utf8mb4 on all database tables
+  shell: |
+    mysql -h{{ waj_mysql_user_host }} -u{{ waj_mysql_user_name }} -p{{ waj_mysql_user_password }} {{ waj_mysql_db_name }} -e "SET FOREIGN_KEY_CHECKS=0;"
+    mysql -h{{ waj_mysql_user_host }} -u{{ waj_mysql_user_name }} -p{{ waj_mysql_user_password }} -Nse "SELECT CONCAT('ALTER TABLE `', table_name, '` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;') FROM information_schema.tables WHERE table_schema='{{ waj_mysql_db_name }}';" | mysql -h{{ waj_mysql_user_host }} -u{{ waj_mysql_user_name }} -p{{ waj_mysql_user_password }} {{ waj_mysql_db_name }}
+    mysql -h{{ waj_mysql_user_host }} -u{{ waj_mysql_user_name }} -p{{ waj_mysql_user_password }} {{ waj_mysql_db_name }} -e "SET FOREIGN_KEY_CHECKS=1;"
+  when: waj_db_type == "mariadb"
+
+- name: Ensure utf8mb4 for reversion_version table
+  shell: |
+    mysql -h{{ waj_mysql_user_host }} -u{{ waj_mysql_user_name }} -p{{ waj_mysql_user_password }} {{ waj_mysql_db_name }} -e "
+      ALTER TABLE reversion_version
+        MODIFY serialized_data LONGTEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+        MODIFY format VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '';
+    "
+  when: waj_db_type == "mariadb"
+
 - name: Update database
   shell: |
     set -e
@@ -237,27 +282,7 @@
   when:
     - waj_create_admin_user
 
-- name: Import Commandments
-  shell: |
-    set -e
-    ./venv/bin/python3 manage.py import_commandments data/biblereferences/commandments.csv
-    ./venv/bin/python3 manage.py import_lessons data/biblereferences/lessons.csv
-  args:
-    chdir: "{{ waj_git_project_path }}/{{ waj_project_title }}"
-    executable: /bin/bash
-  when:
-    - waj_import_commandments
 
-- name: Import Media
-  shell: |
-    set -e
-    ./venv/bin/python3 manage.py import_media data/media/media.csv
-    ./venv/bin/python3 manage.py import_media_lessons data/media/media_lessons.csv
-  args:
-    chdir: "{{ waj_git_project_path }}/{{ waj_project_title }}"
-    executable: /bin/bash
-  when:
-    - waj_import_media
 
 - name: Update translation files
   shell: "bash update_translation_files.sh"
