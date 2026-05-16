@@ -5,6 +5,8 @@
 
 # App version (can be manually chosen. If a new one is set, a new directory will be created. Backup can be restored by repoint the symlink)
 waj_app_version: 'version_1.0'
+# Deploy the local prerequisites/walkasjesus_framework checkout instead of cloning the git repository.
+waj_use_local_framework_project: false
 # When a new version is installed, the database is copied over from the current version. In some circumestances you want to force this.
 waj_force_copy_database: false
 
@@ -32,12 +34,15 @@ waj_update_translation_files: false
 waj_auto_translate_files: false
 # Clean Thumbnail Cache
 waj_clean_thumbnail_cache: false
+# Clear Django Cache
+waj_clear_django_cache: false
+# Clear all non-bible caches, including thumbnail artifacts and non-verse Django cache entries.
+waj_clear_all_caches: false
 # Import all data (Commandments, Lessons, Law of Messiah, Maimonides, Media)
 waj_import_lessons: false
 waj_import_law_of_messiah: false
 waj_import_law_of_messiah_drawings: false
 waj_import_maimonides: false
-waj_import_media_lessons: false
 # Delete and reimport all data
 waj_delete_import_database: false
 # Force import even if data is up-to-date
@@ -79,6 +84,7 @@ waj_git_repository: 'https://github.com/walkasjesus/walkasjesus_framework.git'
 waj_git_user: '{{ waj_app_user }}'
 waj_git_project_path: '{{ waj_projects_directory }}/{{ waj_project_name }}/{{ waj_app_version }}/{{ waj_project_title }}'
 waj_apply_local_overrides: true
+waj_local_framework_project_source: "{{ playbook_dir }}/prerequisites/walkasjesus_framework"
 waj_local_framework_source: "{{ playbook_dir }}/prerequisites/walkasjesus_framework/walkasjesus_website"
 
 ##################
@@ -268,9 +274,9 @@ mysql_config_include_files: []
 #  - src: path/relative/to/playbook/file.cnf
 #  - { src: path/relative/to/playbook/anotherfile.cnf, force: yes }
 
-########################################
-# Jesus Commandments Database Settings #
-########################################
+#####################
+# Database Settings #
+#####################
 
 waj_mysql_db_name: wajdatabase
 waj_mysql_db_collation: utf8_general_ci

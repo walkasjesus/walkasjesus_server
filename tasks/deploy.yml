@@ -33,6 +33,7 @@
   ansible.builtin.command:
     cmd: git config --global --add safe.directory {{ waj_git_project_path }}
   changed_when: false
+  when: not waj_use_local_framework_project | bool
 
 - name: Rewrite GitHub SSH URLs to HTTPS for submodules
   ansible.builtin.command:
@@ -41,6 +42,7 @@
     - 'git@github.com:'
     - 'ssh://git@github.com/'
   changed_when: false
+  when: not waj_use_local_framework_project | bool
 
 - name: Clone git repository    
   git:
@@ -54,26 +56,50 @@
     version: '{{ waj_git_version }}'
   notify:
     - reload uwsgi
+  when: not waj_use_local_framework_project | bool
+
+- name: Deploy local framework project
+  synchronize:
+    src: '{{ waj_local_framework_project_source }}/'
+    dest: '{{ waj_git_project_path }}/'
+    recursive: yes
+    delete: yes
+    rsync_opts:
+      - '--exclude=.git'
+      - '--exclude=.gitmodules'
+      - '--exclude=walkasjesus_website/venv'
+      - '--exclude=walkasjesus_website/media'
+      - '--exclude=walkasjesus_website/log'
+      - '--exclude=walkasjesus_website/staticfiles'
+  when: waj_use_local_framework_project | bool
+  notify:
+    - reload uwsgi
 
 - name: Rewrite repository .gitmodules SSH URLs to HTTPS
   ansible.builtin.command:
     cmd: sed -i 's|git@github.com:|https://github.com/|g' .gitmodules
     chdir: '{{ waj_git_project_path }}'
   changed_when: false
-  when: waj_git_track_submodules | bool
+  when:
+    - waj_git_track_submodules | bool
+    - not waj_use_local_framework_project | bool
 
 - name: Sync git submodule configuration
   ansible.builtin.command:
     cmd: git submodule sync --recursive
     chdir: '{{ waj_git_project_path }}'
   changed_when: false
-  when: waj_git_track_submodules | bool
+  when:
+    - waj_git_track_submodules | bool
+    - not waj_use_local_framework_project | bool
 
 - name: Update git submodules recursively
   ansible.builtin.command:
     cmd: git submodule update --init --recursive
     chdir: '{{ waj_git_project_path }}'
-  when: waj_git_track_submodules | bool
+  when:
+    - waj_git_track_submodules | bool
+    - not waj_use_local_framework_project | bool
 
 - name: Check local framework override files
   stat:
@@ -83,10 +109,17 @@
     - { src: 'walkasjesus_website/base_settings.py', dest: 'walkasjesus_website/base_settings.py' }
     - { src: 'walkasjesus_app/views/user_preferences.py', dest: 'walkasjesus_app/views/user_preferences.py' }
     - { src: 'walkasjesus_app/urls.py', dest: 'walkasjesus_app/urls.py' }
+    - { src: 'walkasjesus_app/management/commands/sync_steps_lawofmessiah_mapping.py', dest: 'walkasjesus_app/management/commands/sync_steps_lawofmessiah_mapping.py' }
     - { src: 'walkasjesus_app/templates/commandments/detail.html', dest: 'walkasjesus_app/templates/commandments/detail.html' }
+    - { src: 'walkasjesus_app/templates/commandments/vision.html', dest: 'walkasjesus_app/templates/commandments/vision.html' }
     - { src: 'static/js/customjs.js', dest: 'static/js/customjs.js' }
+    - { src: 'clean_thumbnail_cache.sh', dest: 'clean_thumbnail_cache.sh' }
+    - { src: 'clear_django_cache.sh', dest: 'clear_django_cache.sh' }
+    - { src: 'clear_all_caches.sh', dest: 'clear_all_caches.sh' }
   register: waj_local_override_stats
-  when: waj_apply_local_overrides | bool
+  when:
+    - waj_apply_local_overrides | bool
+    - not waj_use_local_framework_project | bool
   delegate_to: localhost
   become: false
 
@@ -100,9 +133,30 @@
   loop: "{{ waj_local_override_stats.results }}"
   when:
     - waj_apply_local_overrides | bool
+    - not waj_use_local_framework_project | bool
     - item.stat.exists | default(false)
   notify:
     - reload uwsgi
+
+- name: Find Python bytecode caches after local overrides
+  ansible.builtin.find:
+    paths: "{{ waj_git_project_path }}/{{ waj_project_title }}"
+    patterns: "__pycache__"
+    file_type: directory
+    recurse: true
+  register: waj_pycache_dirs
+  when:
+    - waj_apply_local_overrides | bool
+    - not waj_use_local_framework_project | bool
+
+- name: Remove stale Python bytecode caches after local overrides
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: absent
+  loop: "{{ waj_pycache_dirs.files | default([]) }}"
+  when:
+    - waj_apply_local_overrides | bool
+    - not waj_use_local_framework_project | bool
 
 - name: Deploy config
   template:
@@ -282,8 +336,6 @@
   when:
     - waj_create_admin_user
 
-
-
 - name: Update translation files
   shell: "bash update_translation_files.sh"
   args:
@@ -291,6 +343,7 @@
     executable: /bin/bash
   when:
     - waj_update_translation_files
+  notify: reload uwsgi
 
 - name: Auto translate files
   shell: "bash auto_translate_files.sh"
@@ -300,6 +353,23 @@
   when:
     - waj_auto_translate_files
 
+- name: Clear all non-bible caches
+  shell: "bash clear_all_caches.sh"
+  args:
+    chdir: "{{ waj_git_project_path }}/{{ waj_project_title }}"
+    executable: /bin/bash
+  environment:
+    DJANGO_CACHE_BACKEND: "{{ waj_django_cache_backend }}"
+    DJANGO_CACHE_LOCATION: "{{ waj_django_cache_location }}"
+    DISABLE_CACHE_FOR_DEBUG: "{{ waj_disable_cache_for_debug | lower }}"
+  when:
+    - waj_clear_all_caches
+  tags:
+    - waj_cache
+  notify:
+    - restart uwsgi
+    - restart nginx
+
 - name: Clean Thumbnail Cache
   shell: "bash clean_thumbnail_cache.sh"
   args:
@@ -307,11 +377,34 @@
     executable: /bin/bash
   when:
     - waj_clean_thumbnail_cache
-    - newversion.changed
+    - not waj_clear_all_caches
+  tags:
+    - waj_cache
+  notify: restart uwsgi
+
+- name: Clean Django Cache
+  shell: "bash clear_django_cache.sh"
+  args:
+    chdir: "{{ waj_git_project_path }}/{{ waj_project_title }}"
+    executable: /bin/bash
+  environment:
+    DJANGO_CACHE_BACKEND: "{{ waj_django_cache_backend }}"
+    DJANGO_CACHE_LOCATION: "{{ waj_django_cache_location }}"
+    DISABLE_CACHE_FOR_DEBUG: "{{ waj_disable_cache_for_debug | lower }}"
+  when:
+    - waj_clear_django_cache
+    - not waj_clear_all_caches
+  tags:
+    - waj_cache
+  notify:
+    - restart uwsgi
+    - restart nginx
 
 - name: Point symlink to new version
   file:
     src: '{{ waj_projects_directory }}/{{ waj_project_name }}/{{ waj_app_version }}'
     dest: '{{ waj_projects_directory }}/{{ waj_project_name }}/current'
     state: link
-  notify: restart uwsgi
+  notify:
+    - restart uwsgi
+    - restart nginx

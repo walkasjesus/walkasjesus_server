@@ -25,5 +25,7 @@
 
 - include_tasks: deps.yml
 - include_tasks: deploy.yml
+  tags:
+    - always
 - include_tasks: config.yml
 - include_tasks: import.yml
