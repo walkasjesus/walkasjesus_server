@@ -31,6 +31,8 @@ DEBUG = {{ waj_settings_debug }}
 
 ALLOWED_HOSTS = [{{ waj_domain_names | map('to_json') | join(', ') }}]
 CSRF_TRUSTED_ORIGINS = [{{ waj_csrf_trusted_origins | map('to_json') | join(', ') }}]
+CSRF_ALLOWED_ORIGINS = [{{ waj_csrf_trusted_origins | map('to_json') | join(', ') }}]
+CORS_ORIGINS_WHITELIST = [{{ waj_csrf_trusted_origins | map('to_json') | join(', ') }}]
 
 if DEBUG:
     INSTALLED_APPS += [
@@ -90,6 +92,10 @@ LOGIN_URL = '/account/login/'
 LOGIN_REDIRECT_URL = '/admin_portal/'
 LOGOUT_REDIRECT_URL = '/'
 
+DEFAULT_FROM_EMAIL = 'noreply@{{ waj_domain_names | first }}'
+ACCOUNT_MODERATOR_EMAILS = []
+ACCOUNT_EMAIL_FAIL_SILENTLY = False
+
 # Cache backend configuration
 # Local default: FileBasedCache (persists across webserver restarts).
 # Production Redis: set these environment variables:
@@ -126,8 +132,8 @@ THUMBNAIL_DEBUG = True
 # Geo-location based routing
 # Redirect users from Netherlands to Dutch domain, others to English domain
 GEO_REDIRECT_ENABLED = os.getenv('GEO_REDIRECT_ENABLED', 'False').lower() == 'true'
-GEO_REDIRECT_NL_DOMAIN = 'acc.wandelalsjezus.nl'  # Dutch domain
-GEO_REDIRECT_EN_DOMAIN = 'acc.walkasjesus.org'   # English domain (fallback)
+GEO_REDIRECT_NL_DOMAIN = '{{ waj_geo_redirect_nl_domain }}'  # Dutch domain
+GEO_REDIRECT_EN_DOMAIN = '{{ waj_geo_redirect_en_domain }}'  # English domain (fallback)
 
 # Monitoring application
 if not DEBUG:
@@ -148,23 +154,21 @@ INTERNAL_IPS = [
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 #SECURE_SSL_REDIRECT = True
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
 SECURE_HSTS_SECONDS = 86400  # 1 day
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
 
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
-DISABLED_BIBLE_TRANSLATIONS = [
-    '39d55004bcd11d2f-01'  # Statenvertaling Jongbloed-editie
-]
+DISABLED_BIBLE_TRANSLATIONS = []
 
 BIBLE_API_KEY = '{{ waj_bible_api_key }}'  # The API key to scripture.api.bible
 
-DEFAULT_BIBLE_ANY_LANGUAGE = 'de4e12af7f28f599-01'
+DEFAULT_BIBLE_ANY_LANGUAGE = 'de4e12af7f28f599-02'
 DEFAULT_BIBLE_PER_LANGUAGE = {
-    'en': 'de4e12af7f28f599-01', # King James (Authorised) Version
+    'en': 'de4e12af7f28f599-02', # King James Version (Protestant)
     'nl': '87f620660790371b-01', # Herziene Statenvertaling
 }
 

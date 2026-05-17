@@ -138,26 +138,6 @@
   notify:
     - reload uwsgi
 
-- name: Find Python bytecode caches after local overrides
-  ansible.builtin.find:
-    paths: "{{ waj_git_project_path }}/{{ waj_project_title }}"
-    patterns: "__pycache__"
-    file_type: directory
-    recurse: true
-  register: waj_pycache_dirs
-  when:
-    - waj_apply_local_overrides | bool
-    - not waj_use_local_framework_project | bool
-
-- name: Remove stale Python bytecode caches after local overrides
-  ansible.builtin.file:
-    path: "{{ item.path }}"
-    state: absent
-  loop: "{{ waj_pycache_dirs.files | default([]) }}"
-  when:
-    - waj_apply_local_overrides | bool
-    - not waj_use_local_framework_project | bool
-
 - name: Deploy config
   template:
     src: 'settings.py.j2'
@@ -285,11 +265,14 @@
 
 - name: Ensure utf8mb4 for reversion_version table
   shell: |
-    mysql -h{{ waj_mysql_user_host }} -u{{ waj_mysql_user_name }} -p{{ waj_mysql_user_password }} {{ waj_mysql_db_name }} -e "
-      ALTER TABLE reversion_version
-        MODIFY serialized_data LONGTEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-        MODIFY format VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '';
-    "
+    table_exists=$(mysql -h{{ waj_mysql_user_host }} -u{{ waj_mysql_user_name }} -p{{ waj_mysql_user_password }} -Nse "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='{{ waj_mysql_db_name }}' AND table_name='reversion_version';")
+    if [ "$table_exists" -eq 1 ]; then
+      mysql -h{{ waj_mysql_user_host }} -u{{ waj_mysql_user_name }} -p{{ waj_mysql_user_password }} {{ waj_mysql_db_name }} -e "
+        ALTER TABLE reversion_version
+          MODIFY serialized_data LONGTEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+          MODIFY format VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '';
+      "
+    fi
   when: waj_db_type == "mariadb"
 
 - name: Update database

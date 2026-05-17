@@ -70,12 +70,30 @@ Will import a static CSV file with all the Commandments and corresponding Bible 
 `waj_import_commandments: false`
 Will import a static CSV file with all the Media files from its upstream Github repository.
 `waj_import_media: false`
+Will import lessons data.
+`waj_import_lessons: false`
+Will import Law of Messiah commandments.
+`waj_import_law_of_messiah: false`
+Will import Law of Messiah drawings.
+`waj_import_law_of_messiah_drawings: false`
+Will import Maimonides data.
+`waj_import_maimonides: false`
+Delete and reimport all data (use with care).
+`waj_delete_import_database: false`
+Force import even if data appears up-to-date.
+`waj_force_import: false`
 Update translation files
 `waj_update_translation_files: false`
 Auto translate all files
 `waj_auto_translate_files: false`
 Clean Thumbnail Cache
 `waj_clean_thumbnail_cache: false`
+Clear Django Cache
+`waj_clear_django_cache: false`
+Clear all non-Bible caches, including thumbnail artifacts and non-verse Django cache entries.
+`waj_clear_all_caches: false`
+Run smoke tests at the end of the role.
+`waj_run_smoke_tests: false`
 
 If you running a non-production environment, you can set the following variable to false
 `waj_production: false`
@@ -86,6 +104,9 @@ waj_developer_ips:
   - 1.1.1.1
   - 2.2.2.2
 ```
+
+Deploy the local `prerequisites/walkasjesus_framework` checkout instead of cloning the Git repository (useful for local development):
+`waj_use_local_framework_project: false`
 
 Will clone the configured origin repository to the {{ waj_git_project_path }}
 `waj_git_clone: yes`
@@ -100,6 +121,15 @@ Configure the waj_app_version you would like to give this.
 `waj_app_version: 'version_1.0'`
 In some situations you would like to force a copy of the previous database to the current one.
 `waj_force_copy_database: false`
+
+Enable Redis caching instead of file-based caching:
+`waj_use_redis_cache: false`
+
+Configure geo-location based domain routing:
+```yaml
+waj_geo_redirect_nl_domain: 'wandelalsjezus.nl'
+waj_geo_redirect_en_domain: 'walkasjesus.org'
+```
 
 ### Rollback
 
@@ -249,16 +279,21 @@ The following projects are related to this repository.
 
 ### walkasjesus_framework
 
-This repository is the heart of the application which will show all the different components of the Jesus Commandments Application in a fancy Python Framework [Django](https://www.djangoproject.com/)
+This repository is the heart of the application which will show all the different components of the Walk as Jesus Application in a fancy Python Framework [Django](https://www.djangoproject.com/)
 
 ### walkasjesus_biblereferences
 
-Repository for the Jesus Commandments Framework where all the commandments with all their related Bible References are stored in a CSV. This CSV can be imported/exported with the [Jesus Commandments Framework](https://github.com/walkasjesus/walkasjesus_framework) and the [Jesus Commandments Server](https://github.com/walkasjesus/walkasjesus_server)
+Repository for the Walk as Jesus Framework where all the commandments with all their related Bible References are stored in a CSV. This CSV can be imported/exported with the [Walk as Jesus Framework](https://github.com/walkasjesus/walkasjesus_framework) and the [Walk as Jesus Server](https://github.com/walkasjesus/walkasjesus_server)
 
 ### walkasjesus_media
 
-Repository for the [Jesus Commandments Framework](https://github.com/walkasjesus/walkasjesus_framework) where all the resources (movies, songs, blogs, sermons, testimonies, etc) in all languages are stored in a CSV. This CSV can be imported/exported with the [Jesus Commandments Framework](https://github.com/walkasjesus/walkasjesus_framework) and the [Jesus Commandments Server](https://github.com/walkasjesus/walkasjesus_server)
+Repository for the [Walk as Jesus Framework](https://github.com/walkasjesus/walkasjesus_framework) where all the resources (movies, songs, blogs, sermons, testimonies, etc) in all languages are stored in a CSV. This CSV can be imported/exported with the [Walk as Jesus Framework](https://github.com/walkasjesus/walkasjesus_framework) and the [Walk as Jesus Server](https://github.com/walkasjesus/walkasjesus_server)
 
 ### walkasjesus_translations
 
 This repository contains all translation files from English to other languages. We use Google translate to make a first automated translation. The next step for the translator is to review all translated items and acknowledge them through the admin panel of the website.
+
+### LawofMessiah
+
+This repository contains the structured content and scripts for processing the commandments (*mitzvot*) derived from the Bible, as presented in the book series *The Law of Messiah - Torah from a New Covenant Perspective* by Michael Rudolph and Daniel C. Juster. The goal of this project is to make the commandments more accessible by organizing them into structured formats (e.g., YAML) and providing tools for filtering, searching, and studying them.
+[Law of Messiah](https://github.com/walkasjesus/LawofMessiah)
