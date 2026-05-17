@@ -29,3 +29,5 @@
     - always
 - include_tasks: config.yml
 - include_tasks: import.yml
+- include_tasks: tests.yml
+  when: waj_run_smoke_tests | bool
