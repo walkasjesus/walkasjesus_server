@@ -88,7 +88,8 @@ waj_git_track_submodules: yes
 waj_git_repository: 'https://github.com/walkasjesus/walkasjesus_framework.git'
 waj_git_user: '{{ waj_app_user }}'
 waj_git_project_path: '{{ waj_projects_directory }}/{{ waj_project_name }}/{{ waj_app_version }}/{{ waj_project_title }}'
-waj_apply_local_overrides: true
+waj_apply_local_overrides: false
+waj_local_override_files: []
 waj_geo_redirect_nl_domain: 'wandelalsjezus.nl'
 waj_geo_redirect_en_domain: 'walkasjesus.org'
 waj_local_framework_project_source: "{{ playbook_dir }}/prerequisites/walkasjesus_framework"

@@ -104,18 +104,7 @@
 - name: Check local framework override files
   stat:
     path: "{{ waj_local_framework_source }}/{{ item.src }}"
-  loop:
-    - { src: 'walkasjesus_website/middleware.py', dest: 'walkasjesus_website/middleware.py' }
-    - { src: 'walkasjesus_website/base_settings.py', dest: 'walkasjesus_website/base_settings.py' }
-    - { src: 'walkasjesus_app/views/user_preferences.py', dest: 'walkasjesus_app/views/user_preferences.py' }
-    - { src: 'walkasjesus_app/urls.py', dest: 'walkasjesus_app/urls.py' }
-    - { src: 'walkasjesus_app/management/commands/sync_steps_lawofmessiah_mapping.py', dest: 'walkasjesus_app/management/commands/sync_steps_lawofmessiah_mapping.py' }
-    - { src: 'walkasjesus_app/templates/commandments/detail.html', dest: 'walkasjesus_app/templates/commandments/detail.html' }
-    - { src: 'walkasjesus_app/templates/commandments/vision.html', dest: 'walkasjesus_app/templates/commandments/vision.html' }
-    - { src: 'static/js/customjs.js', dest: 'static/js/customjs.js' }
-    - { src: 'clean_thumbnail_cache.sh', dest: 'clean_thumbnail_cache.sh' }
-    - { src: 'clear_django_cache.sh', dest: 'clear_django_cache.sh' }
-    - { src: 'clear_all_caches.sh', dest: 'clear_all_caches.sh' }
+  loop: "{{ waj_local_override_files }}"
   register: waj_local_override_stats
   when:
     - waj_apply_local_overrides | bool
