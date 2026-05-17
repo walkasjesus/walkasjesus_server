@@ -1,0 +1,113 @@
+---
+# Import all data from CSV files
+# These tasks will run only if the data directories exist (from git submodules)
+
+- name: Check if biblereferences directory exists
+  stat:
+    path: "{{ waj_git_project_path }}/{{ waj_project_title }}/data/biblereferences"
+  register: biblereferences_dir
+
+- name: Check if media directory exists
+  stat:
+    path: "{{ waj_git_project_path }}/{{ waj_project_title }}/data/media"
+  register: media_dir
+
+- name: Backup database before deletion
+  shell: |
+    mysqldump -h{{ waj_mysql_user_host }} -u{{ waj_mysql_user_name }} -p{{ waj_mysql_user_password }} {{ waj_mysql_db_name }} > /root/mysqldump_{{ waj_mysql_db_name }}_$(date +%Y%m%d).sql
+  when: waj_delete_import_database | bool
+  ignore_errors: yes
+  register: backup_result
+
+- name: Delete existing data from database
+  shell: |
+    TABLES=$(mysql -h{{ waj_mysql_user_host }} -u{{ waj_mysql_user_name }} -p{{ waj_mysql_user_password }} {{ waj_mysql_db_name }} -e "show tables;" | grep walkasjesus_app)
+    mysql -h{{ waj_mysql_user_host }} -u{{ waj_mysql_user_name }} -p{{ waj_mysql_user_password }} {{ waj_mysql_db_name }} -e "SET FOREIGN_KEY_CHECKS = 0; $(echo "$TABLES" | awk '{print "DELETE FROM " $1 ";"}') SET FOREIGN_KEY_CHECKS = 1"
+  when: waj_delete_import_database | bool
+  ignore_errors: yes
+  register: delete_result
+
+- name: Import Commandments CSV
+  shell: |
+    cd "{{ waj_git_project_path }}/{{ waj_project_title }}"
+    source venv/bin/activate
+    python3 manage.py import_commandments data/biblereferences/commandments.csv
+  args:
+    executable: /bin/bash
+  when: (waj_import_commandments | bool) and (biblereferences_dir.stat.exists | default(False))
+  register: import_commandments_result
+
+- name: Import Lessons CSV
+  shell: |
+    cd "{{ waj_git_project_path }}/{{ waj_project_title }}"
+    source venv/bin/activate
+    python3 manage.py import_lessons data/biblereferences/lessons.csv
+  args:
+    executable: /bin/bash
+  when: (waj_import_lessons | bool) and (biblereferences_dir.stat.exists | default(False))
+  register: import_lessons_result
+
+- name: Ensure utf8mb4 for Law of Messiah import
+  shell: |
+    mysql -h{{ waj_mysql_user_host }} -u{{ waj_mysql_user_name }} -p{{ waj_mysql_user_password }} -e "ALTER DATABASE {{ waj_mysql_db_name }} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+    mysql -h{{ waj_mysql_user_host }} -u{{ waj_mysql_user_name }} -p{{ waj_mysql_user_password }} {{ waj_mysql_db_name }} -e "ALTER TABLE commandments_app_lawofmessiah \
+      MODIFY title VARCHAR(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', \
+      MODIFY commandment LONGTEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, \
+      MODIFY category VARCHAR(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', \
+      MODIFY commentary_rudolph LONGTEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, \
+      MODIFY commentary_juster LONGTEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, \
+      MODIFY classical_commentators LONGTEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, \
+      MODIFY source LONGTEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, \
+      MODIFY copyright LONGTEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+  when: waj_import_law_of_messiah | bool
+  register: law_of_messiah_charset_result
+
+- name: Import Law of Messiah
+  shell: |
+    cd "{{ waj_git_project_path }}/{{ waj_project_title }}"
+    source venv/bin/activate
+    python3 manage.py import_law_of_messiah --source data/lawofmessiah/filter_output/collected_ids_titles.yaml
+  args:
+    executable: /bin/bash
+  when: (waj_import_law_of_messiah | bool) and (biblereferences_dir.stat.exists | default(False))
+  register: import_lom_result
+
+- name: Import Law of Messiah Drawings
+  shell: |
+    cd "{{ waj_git_project_path }}/{{ waj_project_title }}"
+    source venv/bin/activate
+    python3 manage.py import_law_of_messiah_drawings --filename-prefix jv_waj_lom_
+  args:
+    executable: /bin/bash
+  when: (waj_import_law_of_messiah_drawings | bool) and (biblereferences_dir.stat.exists | default(False))
+  register: import_lom_drawings_result
+
+- name: Import Maimonides Commandments
+  shell: |
+    cd "{{ waj_git_project_path }}/{{ waj_project_title }}"
+    source venv/bin/activate
+    python3 manage.py import_maimonides
+  args:
+    executable: /bin/bash
+  when: (waj_import_maimonides | bool) and (biblereferences_dir.stat.exists | default(False))
+  register: import_maimonides_result
+
+- name: Import Media CSV
+  shell: |
+    cd "{{ waj_git_project_path }}/{{ waj_project_title }}"
+    source venv/bin/activate
+    python3 manage.py import_media data/media/media.csv
+  args:
+    executable: /bin/bash
+  when: (waj_import_media | bool) and (media_dir.stat.exists | default(False))
+  register: import_media_result
+
+- name: Repair stale media image paths
+  shell: |
+    cd "{{ waj_git_project_path }}/{{ waj_project_title }}"
+    source venv/bin/activate
+    python3 manage.py repair_media_image_paths
+  args:
+    executable: /bin/bash
+  when: media_dir.stat.exists | default(False)
+  register: repair_media_paths_result

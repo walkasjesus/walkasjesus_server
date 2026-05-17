@@ -1,0 +1,179 @@
+---
+- name: Run WalkAsJesus smoke tests
+  ansible.builtin.shell: |
+    set -uo pipefail
+
+    BASE_EN="{{ waj_smoke_base_en }}"
+    BASE_NL="{{ waj_smoke_base_nl }}"
+    REPORT="/tmp/waj_smoke_test_report.txt"
+    FAILURES=0
+
+    pass() {
+      echo "PASS: $1" >> "$REPORT"
+    }
+
+    fail() {
+      echo "FAIL: $1" >> "$REPORT"
+      FAILURES=$((FAILURES + 1))
+    }
+
+    check_status_200() {
+      local label="$1"
+      local url="$2"
+      local cookies="${3:-}"
+      local code
+      if [[ -n "$cookies" ]]; then
+        code=$(curl -s -L --max-time 20 -o /dev/null -w "%{http_code}" -A "Mozilla/5.0" --cookie "$cookies" "$url" || echo "000")
+      else
+        code=$(curl -s -L --max-time 20 -o /dev/null -w "%{http_code}" -A "Mozilla/5.0" "$url" || echo "000")
+      fi
+      if [[ "$code" == "200" ]]; then
+        pass "$label (HTTP 200)"
+      else
+        fail "$label (HTTP $code)"
+      fi
+    }
+
+    echo "WalkAsJesus smoke test run $(date -Iseconds)" > "$REPORT"
+
+    # Core page availability checks requested by user.
+    check_status_200 "EN step 14" "$BASE_EN/step/14/"
+    check_status_200 "EN law A13" "$BASE_EN/law_of_messiah/A13/"
+    check_status_200 "EN lesson 3" "$BASE_EN/lesson/3/"
+    check_status_200 "EN home" "$BASE_EN/"
+    check_status_200 "EN steps" "$BASE_EN/steps/"
+    check_status_200 "EN law index" "$BASE_EN/law_of_messiah/"
+    check_status_200 "EN lessons" "$BASE_EN/lessons/"
+    check_status_200 "EN vision" "$BASE_EN/vision/"
+
+    # Dutch availability checks (localized known slugs).
+    check_status_200 "NL step 14" "$BASE_NL/stap/14/" "django_language=nl"
+    check_status_200 "NL law A13" "$BASE_NL/wet_van_christus/A13/" "django_language=nl"
+    check_status_200 "NL lesson 3" "$BASE_NL/les/3/" "django_language=nl"
+    check_status_200 "NL home" "$BASE_NL/" "django_language=nl"
+    check_status_200 "NL steps" "$BASE_NL/stappen/" "django_language=nl"
+    check_status_200 "NL law index" "$BASE_NL/wet_van_christus/" "django_language=nl"
+    check_status_200 "NL lessons" "$BASE_NL/lessen/" "django_language=nl"
+    check_status_200 "NL vision" "$BASE_NL/visie/" "django_language=nl"
+
+    # Media language policy checks on step 14.
+    EN_STEP14=$(mktemp)
+    NL_STEP14=$(mktemp)
+    curl -s -L --max-time 20 -A "Mozilla/5.0" --cookie "django_language=en" "$BASE_EN/step/14/" > "$EN_STEP14" || true
+    curl -s -L --max-time 20 -A "Mozilla/5.0" --cookie "django_language=nl" "$BASE_NL/stap/14/" > "$NL_STEP14" || true
+
+    if grep -qi "Witter dan sneeuw" "$EN_STEP14"; then
+      fail "EN step 14 should not show Dutch-only media title"
+    else
+      pass "EN step 14 excludes Dutch-only media title"
+    fi
+
+    if grep -qi "Witter dan sneeuw" "$NL_STEP14"; then
+      pass "NL step 14 includes Dutch media title"
+    else
+      fail "NL step 14 should include Dutch media title"
+    fi
+
+    # Superbook should not be visible when kids mode is off.
+    if grep -q 'id="superbook"' "$EN_STEP14"; then
+      fail "EN step 14 should not render superbook section without kids mode"
+    else
+      pass "EN step 14 hides superbook section without kids mode"
+    fi
+
+    # NL kids mode should not render empty songs wrapper.
+    NL_STEP14_KIDS=$(mktemp)
+    curl -s -L --max-time 20 -A "Mozilla/5.0" --cookie "django_language=nl;jc_kids_mode=true" "$BASE_NL/stap/14/" > "$NL_STEP14_KIDS" || true
+    if grep -q 'id="songs"' "$NL_STEP14_KIDS"; then
+      if awk '/id="songs"/,/id="[a-z_]+"/' "$NL_STEP14_KIDS" | grep -q -E '<h5>|iframe'; then
+        pass "NL kids step 14 songs section is non-empty"
+      else
+        fail "NL kids step 14 has empty songs section"
+      fi
+    else
+      pass "NL kids step 14 does not render songs section when empty"
+    fi
+
+    # Kids-mode visibility checks (server HTML + cookie mode).
+    STEP1_DEFAULT=$(mktemp)
+    STEP1_KIDS=$(mktemp)
+    curl -s -L --max-time 20 -A "Mozilla/5.0" --cookie "django_language=en" "$BASE_EN/step/1/" > "$STEP1_DEFAULT" || true
+    curl -s -L --max-time 20 -A "Mozilla/5.0" --cookie "django_language=en;jc_kids_mode=true" "$BASE_EN/step/1/" > "$STEP1_KIDS" || true
+
+    if grep -q 'targetaudience="kids"' "$STEP1_DEFAULT"; then
+      fail "Step 1 default response should not include kids-only nodes"
+    else
+      pass "Step 1 default response excludes kids-only nodes"
+    fi
+
+    if grep -q 'targetaudience="kids"' "$STEP1_KIDS"; then
+      pass "Kids mode response includes kids audience nodes"
+    else
+      fail "Kids mode response should include kids audience nodes"
+    fi
+
+    # Language-switch + bible persistence checks (modal save behavior).
+    JAR=$(mktemp)
+    EN_BOOT=$(mktemp)
+    curl -s -L --max-time 20 -A "Mozilla/5.0" -c "$JAR" -b "$JAR" "$BASE_EN/step/14/" > "$EN_BOOT" || true
+    CSRF_EN=$(grep -m1 'name="csrfmiddlewaretoken"' "$EN_BOOT" | sed -E 's/.*value="([^"]+)".*/\1/')
+
+    EN_JSON=$(curl -s -L --max-time 20 -A "Mozilla/5.0" "$BASE_EN/bible-translations/?language=en" || true)
+    NL_JSON=$(curl -s -L --max-time 20 -A "Mozilla/5.0" "$BASE_EN/bible-translations/?language=nl" || true)
+    EN_BIBLE=$(printf '%s' "$EN_JSON" | tr -d '\n\r ' | sed -E 's/.*"default_bible_id":"([^"]+)".*/\1/')
+    NL_BIBLE=$(printf '%s' "$NL_JSON" | tr -d '\n\r ' | sed -E 's/.*"default_bible_id":"([^"]+)".*/\1/')
+
+    if [[ -z "$CSRF_EN" || -z "$EN_BIBLE" || -z "$NL_BIBLE" ]]; then
+      fail "Could not initialize bible-switch persistence test inputs"
+    else
+      SWITCH_NL=$(curl -s --max-time 20 -A "Mozilla/5.0" -c "$JAR" -b "$JAR" \
+        -H "Content-Type: application/x-www-form-urlencoded" \
+        -H "X-CSRFToken: $CSRF_EN" \
+        -X POST "$BASE_EN/language-switch/" \
+        --data "csrfmiddlewaretoken=$CSRF_EN&language=nl&next=/step/14/&bible_id=$NL_BIBLE" || true)
+      REDIRECT_NL=$(printf '%s' "$SWITCH_NL" | tr -d '\n\r' | sed -E 's/.*"redirect_url"[[:space:]]*:[[:space:]]*"([^"]+)".*/\1/')
+      NL_PAGE=$(mktemp)
+      curl -s -L --max-time 20 -A "Mozilla/5.0" -c "$JAR" -b "$JAR" "$REDIRECT_NL" > "$NL_PAGE" || true
+      NL_SELECTED=$(awk '/id="drpBibleTranslation"/,/<\/select>/' "$NL_PAGE" | grep -m1 -E '<option[^>]*selected' | sed -E 's/.*value="([^"]+)".*/\1/')
+
+      if [[ "$NL_SELECTED" == "$NL_BIBLE" ]]; then
+        pass "Language switch to NL persists selected NL bible in modal"
+      else
+        fail "Language switch to NL did not persist selected NL bible (got '$NL_SELECTED', expected '$NL_BIBLE')"
+      fi
+
+      CSRF_NL=$(grep -m1 'name="csrfmiddlewaretoken"' "$NL_PAGE" | sed -E 's/.*value="([^"]+)".*/\1/')
+      SWITCH_EN=$(curl -s --max-time 20 -A "Mozilla/5.0" -c "$JAR" -b "$JAR" \
+        -H "Content-Type: application/x-www-form-urlencoded" \
+        -H "X-CSRFToken: $CSRF_NL" \
+        -X POST "$BASE_NL/language-switch/" \
+        --data "csrfmiddlewaretoken=$CSRF_NL&language=en&next=/stap/14/&bible_id=$EN_BIBLE" || true)
+      REDIRECT_EN=$(printf '%s' "$SWITCH_EN" | tr -d '\n\r' | sed -E 's/.*"redirect_url"[[:space:]]*:[[:space:]]*"([^"]+)".*/\1/')
+      EN_PAGE2=$(mktemp)
+      curl -s -L --max-time 20 -A "Mozilla/5.0" -c "$JAR" -b "$JAR" "$REDIRECT_EN" > "$EN_PAGE2" || true
+      EN_SELECTED=$(awk '/id="drpBibleTranslation"/,/<\/select>/' "$EN_PAGE2" | grep -m1 -E '<option[^>]*selected' | sed -E 's/.*value="([^"]+)".*/\1/')
+
+      if [[ "$EN_SELECTED" == "$EN_BIBLE" ]]; then
+        pass "Language switch to EN persists selected EN bible in modal"
+      else
+        fail "Language switch to EN did not persist selected EN bible (got '$EN_SELECTED', expected '$EN_BIBLE')"
+      fi
+    fi
+
+    echo "" >> "$REPORT"
+    echo "Total failures: $FAILURES" >> "$REPORT"
+    cat "$REPORT"
+
+    if [[ $FAILURES -ne 0 ]]; then
+      exit 1
+    fi
+  args:
+    executable: /bin/bash
+  delegate_to: localhost
+  become: false
+  register: waj_smoke_tests
+  changed_when: false
+
+- name: Print WalkAsJesus smoke test report
+  ansible.builtin.debug:
+    msg: "{{ waj_smoke_tests.stdout_lines }}"
