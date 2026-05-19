@@ -202,6 +202,27 @@
     - waj_db_type != "mariadb"
     - currentversion.stat.islnk is defined
 
+- name: Check if previous Bible API cache file exists
+  stat:
+    path: '{{ waj_project_path }}/{{ waj_project_title }}/bible_api_cache.json'
+  register: waj_previous_bible_api_cache
+  when:
+    - newversion.changed
+    - currentversion.stat.islnk is defined
+
+- name: Copy Bible API cache from current version to new version
+  copy:
+    src: '{{ waj_project_path }}/{{ waj_project_title }}/bible_api_cache.json'
+    dest: '{{ waj_git_project_path }}/{{ waj_project_title }}/bible_api_cache.json'
+    remote_src: yes
+    owner: '{{ waj_app_user }}'
+    group: '{{ waj_app_group }}'
+    mode: u=rw,g=r,o=r
+  when:
+    - newversion.changed
+    - currentversion.stat.islnk is defined
+    - waj_previous_bible_api_cache.stat.exists | default(false)
+
 - name: Install pip dependencies
   pip:
     name: uWSGI
@@ -324,6 +345,15 @@
     executable: /bin/bash
   when:
     - waj_auto_translate_files
+
+- name: Compile translation catalogs
+  shell: |
+    set -e
+    ./venv/bin/python3 manage.py compilemessages
+  args:
+    chdir: "{{ waj_git_project_path }}/{{ waj_project_title }}"
+    executable: /bin/bash
+  notify: reload uwsgi
 
 - name: Clear all non-bible caches
   shell: "bash clear_all_caches.sh"
